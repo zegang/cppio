@@ -1,0 +1,49 @@
+
+[submodule "third_party/boost"]
+	path = third_party/boost
+	url = https://github.com/boostorg/boost.git
+	ignore = dirty
+[submodule "third_party/spdlog"]
+	path = third_party/spdlog
+	url = https://github.com/gabime/spdlog.git
+	ignore = dirty
+[submodule "third_party/goincpp"]
+	path = third_party/goincpp
+	url = https://github.com/zegang/goincpp.git
+	ignore = dirty
+[submodule "third_party/grpc"]
+	path = third_party/grpc
+	url = https://github.com/grpc/grpc.git
+	ignore = dirty
+[submodule "third_party/rocksdb"]
+	path = third_party/rocksdb
+	url = https://github.com/facebook/rocksdb.git
+	ignore = dirty
+[submodule "third_party/gflags"]
+	path = third_party/gflags
+	url = https://github.com/gflags/gflags.git
+	ignore = dirty
+[submodule "third_party/minio-cpp"]
+	path = third_party/minio-cpp
+	url = https://github.com/minio/minio-cpp.git
+	ignore = dirty
+[submodule "third_party/vcpkg"]
+	path = third_party/vcpkg
+	url = https://github.com/microsoft/vcpkg.git
+	ignore = dirty
+[submodule "third_party/aws-sdk-cpp"]
+	path = third_party/aws-sdk-cpp
+	url = https://github.com/aws/aws-sdk-cpp.git
+	ignore = dirty
+[submodule "third_party/cmake"]
+	path = third_party/cmake
+	url = https://github.com/Kitware/CMake.git
+	ignore = dirty
+[submodule "third_party/nuraft"]
+	path = third_party/nuraft
+	url = https://github.com/eBay/NuRaft.git
+	ignore = dirty
+[submodule "third_party/inja"]
+	path = third_party/inja
+	url = https://github.com/pantor/inja.git
+	ignore = dirty

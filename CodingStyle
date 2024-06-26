@@ -1,0 +1,15 @@
+Cppio Coding Style
+------------------
+
+C Code
+------
+For C code, refer to Linux Kernel coding standars:
+
+        https://www.kernel.org/doc/Documentation/process/coding-style.rst
+
+C++ code
+--------
+
+For C++ code, refer to Google's coding guide as a baseline:
+
+    https://google.github.io/styleguide/cppguide.html

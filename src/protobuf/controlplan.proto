@@ -1,0 +1,15 @@
+// Copyright 2015 cppio authors. All rights reserved.
+
+syntax = "proto3";
+
+import "topology.proto";
+
+package CPPIO_NAMESPACE;
+
+message VolumeOptions {
+  string name = 1;
+}
+
+service TopologyService {
+  rpc GetVolume (VolumeOptions) returns (Volume) {}
+}

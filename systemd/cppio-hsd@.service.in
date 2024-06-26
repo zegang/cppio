@@ -1,0 +1,15 @@
+[Unit]
+Description=CppIO hybrid storage daemon hsd.%i
+PartOf=cppio-hsd.target
+After=network-online.target local-fs.target time-sync.target
+Before=remote-fs-pre.target cppio-hsd.target
+Wants=network-online.target local-fs.target time-sync.target remote-fs-pre.target cppio-hsd.target
+
+[Service]
+EnvironmentFile=-@SYSTEMD_ENV_FILE@
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=@CMAKE_INSTALL_PREFIX@/bin/cppio-hsd -f --id %i --setuser cppio --setgroup cppio
+ExecStartPre=@CMAKE_INSTALL_FULL_LIBEXECDIR@/cppio/cppio-hsd-prestart.sh --id %i
+
+[Install]
+WantedBy=cppio-hsd.target

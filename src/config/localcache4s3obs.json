@@ -1,0 +1,32 @@
+{
+  "name": "S3OBSCacheVolume",
+  "type": "VOLUMETYPE_VOLUME",
+  "storage_api_type": "STORAGEAPITYPE_FS",
+  "url": "/mnt/cppio/localcache4s3obs",
+  "stripe_type": "VOLUMESTRIPETYPE_CACHE",
+  "sub_volumes": [
+    {
+      "name": "MinioOBSCache",
+      "type": "VOLUMETYPE_LEAFVOLUME",
+      "url": "/cppiodata/minioobscache",
+      "weight": 100,
+      "storage_api_type": "STORAGEAPITYPE_FS",
+      "state": "VOLUMESTATE_UNSPECIFIED",
+      "credential": {},
+      "tags": []
+    },
+    {
+      "name": "MinioOBS",
+      "type": "VOLUMETYPE_LEAFVOLUME",
+      "url": "http://192.168.1.3:9000",
+      "weight": 0,
+      "storage_api_type": "STORAGEAPITYPE_CLOUD_OBS",
+      "state": "VOLUMESTATE_UNSPECIFIED",
+      "credential": {
+        "user": "minioadmin",
+        "password": "minioadmin" 
+      },
+      "tags": []
+    }
+  ]
+}

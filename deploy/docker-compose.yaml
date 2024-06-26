@@ -1,0 +1,22 @@
+services:
+  cppio-hsd:
+    image: localhost/cppio_rel:latest
+    container_name: cppio-hsd
+    build:
+      context: ..
+      dockerfile: deploy/SuseContainerImageFile
+    command: ["/cppio/bin/hsd", "myhsd", "/cppio/config/mirrortwolocalmps.json"]
+    ports:
+      - "9999:9999"
+    restart: unless-stopped
+
+  cppio-cli:
+    image: localhost/cppio_rel:latest
+    container_name: cppio-cli
+    build:
+      context: ..
+      dockerfile: deploy/SuseContainerImageFile
+    command: ["sleep", "infinity"]
+    environment:
+      - CPPIO_HSD_SVC_NAME=cppio-hsd
+    restart: unless-stopped

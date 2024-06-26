@@ -1,0 +1,19 @@
+FROM opensuse/leap:latest
+
+LABEL maintainer="Zegang.luo@qq.com"
+LABEL version="0.0.1"
+LABEL description="cppio release container image"
+
+# RUN zypper refresh && \
+#     zypper install -y gcc15 gcc15-c++ bind-utils && \
+#     zypper clean && \
+#     update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100 && \
+#     update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100
+
+COPY build/cppio/cppio_install_root/bin /cppio/bin
+COPY build/cppio/cppio_install_root/lib /cppio/lib
+COPY build/cppio/cppio_install_root/config /cppio/config
+
+ENV PATH="$PATH:/cppio/bin"
+ENV LD_LIBRARY_PATH="/cppio/lib:$LD_LIBRARY_PATH"
+ENV CPPIO_ROOT="/cppio"

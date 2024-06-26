@@ -1,0 +1,70 @@
+// Copyright 2015 cppio authors. All rights reserved.
+
+syntax = "proto3";
+
+package CPPIO_NAMESPACE;
+
+enum StorageApiType {
+  STORAGEAPITYPE_UNSPECIFIED = 0;
+  STORAGEAPITYPE_FS = 1;
+  STORAGEAPITYPE_BLOCK_HDD = 2;
+  STORAGEAPITYPE_BLOCK_SSD = 3;
+  STORAGEAPITYPE_BLOCK_NBD = 4;
+  STORAGEAPITYPE_LVM = 5;
+  STORAGEAPITYPE_CLOUD_OBS = 6;
+  STORAGEAPITYPE_CLOUD_BLOCK = 7;
+  STORAGEAPITYPE_CLOUD_FS = 8;
+  STORAGEAPITYPE_KVS = 9;
+  STORAGEAPITYPE_HADOOP = 10;
+}
+
+enum VolumeState {
+  VOLUMESTATE_UNSPECIFIED = 0;
+  VOLUMESTATE_OFFLINE = 1;
+  VOLUMESTATE_ERROR = 2;
+  VOLUMESTATE_DEGRADED = 3;
+  VOLUMESTATE_ACTIVE = 4;
+  VOLUMESTATE_FREEZEN = 5;
+}
+
+enum VolumeType {
+  VOLUMETYPE_UNSPECIFIED = 0;
+  VOLUMETYPE_VOLUME = 1;
+  VOLUMETYPE_LEAFVOLUME = 2;
+}
+
+enum VolumeStripeType {
+  VOLUMESTRIPETYPE_UNSPECIFIED = 0;
+  VOLUMESTRIPETYPE_RAID0 = 1;
+  VOLUMESTRIPETYPE_RAID1 = 2;
+  VOLUMESTRIPETYPE_RAID5 = 3;
+  VOLUMESTRIPETYPE_RAID6 = 4;
+  VOLUMESTRIPETYPE_ERASURECODE = 5;
+  VOLUMESTRIPETYPE_CACHE = 6;
+}
+
+enum VolumeVersion {
+  VOLUMEVERSION_UNSPECIFIED = 0;
+}
+
+message Credential {
+  string user = 1;
+  string password = 2;
+}
+
+message Volume {
+  VolumeVersion version = 1;
+  string uuid = 2;
+  string name = 3;
+  VolumeType type = 4;
+  string subtype = 5;
+  VolumeStripeType stripe_type = 6;
+  string url = 7;
+  int32 weight = 8;
+  Credential credential = 9;
+  VolumeState state = 10;
+  int64 generation = 11;
+  StorageApiType storage_api_type = 12;
+  repeated Volume sub_volumes = 13;
+  repeated string tags = 14;
+}

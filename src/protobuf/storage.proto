@@ -1,0 +1,24 @@
+// Copyright 2015 cppio authors. All rights reserved.
+
+syntax = "proto3";
+
+import "topology.proto";
+
+package CPPIO_NAMESPACE;
+
+message IODescript {
+    string volume_uuid  = 1;
+    string volume_name  = 2;
+    string path_or_key  = 3;
+    int64  offset       = 4;
+    int64  len          = 5;
+    bytes  buffer       = 6;
+    int32  error        = 7;
+    int64  rlen         = 8;
+}
+
+service StorageService {
+  rpc Create  (IODescript)  returns (IODescript)  {}
+  rpc Read    (IODescript)  returns (IODescript)  {}
+  rpc Write   (IODescript)  returns (IODescript)  {}
+}

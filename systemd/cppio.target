@@ -1,0 +1,5 @@
+[Unit]
+Description=cppio target allowing to start/stop all cppio*@.service instances at once
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,8 @@
+[Unit]
+Description=cppio target allowing to start/stop all cppio-hsd@.service instances at once
+PartOf=cppio.target
+Before=cppio.target
+Wants=cppio.target
+
+[Install]
+WantedBy=multi-user.target cppio.target

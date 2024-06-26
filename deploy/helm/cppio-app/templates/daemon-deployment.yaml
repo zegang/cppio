@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cppio-app.hsdFullname" . }}
+  labels:
+    app: {{ include "cppio-app.hsdName" . }}
+    chart: {{ include "cppio-app.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.hsd.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "cppio-app.hsdName" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "cppio-app.hsdName" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: cppio-hsd-container
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/cppio/bin/hsd"]
+          args: ["myhsd", "/cppio/config/mirrortwolocalmps.json"]
+          ports:
+            - containerPort: {{ .Values.hsd.containerPort }}

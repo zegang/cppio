@@ -1,0 +1,10 @@
+volume:
+  name: "MyVolume1"
+  stripe_type: "kMirror"
+  storage_endpoints:
+    - name: "MountPoint1"
+      type: "kFS"
+      url: "/cppiodata/mp1"
+    - name: "MountPoint2"
+      type: "kFS"
+      url: "/cppiodata/mp2"

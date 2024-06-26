@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cppio-app.cliFullname" . }}
+  labels:
+    app: {{ include "cppio-app.cliName" . }}
+    chart: {{ include "cppio-app.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.cli.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "cppio-app.cliName" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "cppio-app.cliName" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: cppio-cli-container
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["sleep"]
+          args: ["infinity"]

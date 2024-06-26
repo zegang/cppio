@@ -1,0 +1,35 @@
+1. Hybrid Storage Service Daemon on Each Node, like Ceph OSD.
+2. Distributed Storage on Nodes
+3. Raft for consensus (Meta Data, Distributed RocksDB)
+4. RDMA for performence
+5. How to handle large amount small files in three main stages of the machine learning lifecycle:
+5.1 Data Ingestion:
+    This stage involves collecting raw data, which is often unstructured and high-volume (e.g., images, video, sensor data).
+    Massive Scalability: The storage system must be able to scale to petabytes or even exabytes of data without a performance drop.
+    High Throughput: It needs to handle a high volume of concurrent writes to ingest data quickly and efficiently.
+    Data Integrity and Durability: The system must guarantee that data is not lost or corrupted during the ingestion process, which can be critical for model accuracy.
+5.2 Model Training
+    This is the most computationally intensive stage. Large-scale models, especially deep learning models, require fast access to vast datasets to feed GPUs.
+    High-Speed Random I/O: During training, a model might randomly access millions of small files (e.g., images for a computer vision model). The storage system must provide high IOPS (Input/Output Operations Per Second) to prevent the GPUs from being idle.
+    Parallelism: The storage architecture must support a high degree of parallel data access from multiple compute nodes and GPUs. Bottlenecks at the storage level will directly impact training time.
+    Low Latency: Latency-sensitive operations like metadata lookups must be exceptionally fast to prevent delays in fetching data batches.  model training, and inference.
+5.3 Inference
+    Once a model is trained, it's deployed to make predictions. This stage has different requirements depending on the application (e.g., real-time fraud detection vs. offline analytics).
+    Low Latency: For real-time applications, the storage must provide sub-millisecond latency to fetch models and data, as every millisecond counts.
+    High Throughput: For batch inference, the system needs high throughput to process a large number of requests efficiently.
+    Accessibility: The storage system needs to be highly available and accessible from the inference servers, which might be geographically distributed or running in a serverless environment.
+5.4 Storage Design Principles
+    To meet these requirements, an effective storage system for AI should be designed around several key principles:
+5.4.1. Parallel and Distributed Architecture
+    A single storage server cannot keep up with the demands of an AI system. The solution is to use a parallel file system or distributed object storage that can aggregate the performance of many nodes. This allows for horizontal scaling of both capacity and performance.
+5.4.2. Software-Defined Storage
+    Instead of relying on monolithic hardware, a software-defined storage (SDS) approach provides flexibility. This decouples the storage software from the underlying hardware, allowing you to use a mix of cost-effective components like spinning disks for capacity and high-speed NVMe SSDs for performance-sensitive tasks.
+5.4.3. Data Tiering
+    Not all data has the same value or access frequency. A well-designed storage system for AI should implement data tiering to optimize for both cost and performance.
+    Hot Tier: Use high-performance storage (e.g., NVMe SSDs) for actively used training data and model checkpoints.
+    Cold Tier: Use low-cost, high-capacity storage (e.g., hard disk drives or object storage) for large, infrequently accessed datasets and backups
+5.4.4. Scalability and Elasticity
+    The storage system should be able to scale horizontally by adding more nodes without a complete architectural overhaul. It should also be elastic, allowing you to add or remove resources as your workload demands change, which is a key benefit of cloud-based solutions.
+5.4.5. Compatibility with AI Frameworks
+    The storage solution must integrate seamlessly with popular AI frameworks and tools like TensorFlow, PyTorch, and Kubernetes. The use of standard APIs like the S3 API for object storage or POSIX compatibility for file systems ensures that the data is easily accessible to your applications.
+...

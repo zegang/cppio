@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cppio-hsd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cppio-hsd
+  template:
+    metadata:
+      labels:
+        app: cppio-hsd
+    spec:
+      containers:
+      - name: cppio-hsd-container
+        image: localhost/cppio_rel
+        command: ["/cppio/bin/hsd"]
+        args: ["myhsd", "/cppio/config/mirrortwolocalmps.json"]
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9999
+          name: cppio-hsd-svc-port
+        env:
+        - name: CPPIO_HSD_SVC_ADDRESS
+          value: "0.0.0.0"
+        - name: CPPIO_HSD_SVC_PORT
+          value: "9999"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cppio-hsd-service
+spec:
+  selector:
+    app: cppio-hsd
+  ports:
+  - protocol: TCP
+    port: 9999
+    targetPort: 9999
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cppio-cli
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cppio-cli
+  template:
+    metadata:
+      labels:
+        app: cppio-cli
+    spec:
+      containers:
+      - name: cppio-cli-container
+        image: localhost/cppio_rel
+        command: [ "sleep" ]
+        args: [ "infinity" ]
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: CPPIO_HSD_SVC_NAME
+          value: "cppio-hsd-pod"
+        - name: CPPIO_HSD_SVC_PORT
+          value: "9999"

@@ -1,0 +1,60 @@
+
+#!/usr/bin/env bpftrace
+//
+// Copyright 2026 cppio authors. All rights reserved.
+//
+// Usage: sudo bpftrace trace_cli.bt
+
+tracepoint:syscalls:sys_enter_openat {
+    if (comm == "cli") {
+        printf("[%d] %s: openat called with %s\n", pid, comm, str(args->filename));
+    }
+}
+
+tracepoint:syscalls:sys_enter_read {
+    if (comm == "cli") {
+        printf("[%d] %s: read called with fd %d\n", pid, comm, args->fd);
+    }
+}
+
+tracepoint:syscalls:sys_enter_write {
+    if (comm == "cli") {
+        printf("[%d] %s: write called with fd %d\n", pid, comm, args->fd);
+    }
+}
+
+tracepoint:syscalls:sys_enter_close {
+    if (comm == "cli") {
+        printf("[%d] %s: close called with fd %d\n", pid, comm, args->fd);
+    }
+}
+
+tracepoint:syscalls:sys_enter_execve {
+    if (comm == "cli") {
+        printf("[%d] %s: execve called with %s\n", pid, comm, str(args->filename));
+    }
+}
+
+tracepoint:syscalls:sys_enter_socket {
+    if (comm == "cli") {
+        printf("[%d] %s: socket called with family %d type %d\n", pid, comm, args->family, args->type);
+    }
+}
+
+tracepoint:syscalls:sys_enter_connect {
+    if (comm == "cli") {
+        printf("[%d] %s: connect called\n", pid, comm);
+    }
+}
+
+tracepoint:syscalls:sys_enter_sendto {
+    if (comm == "cli") {
+        printf("[%d] %s: sendto called with len %d\n", pid, comm, args->len);
+    }
+}
+
+tracepoint:syscalls:sys_enter_recvfrom {
+    if (comm == "cli") {
+        printf("[%d] %s: recvfrom called\n", pid, comm);
+    }
+}

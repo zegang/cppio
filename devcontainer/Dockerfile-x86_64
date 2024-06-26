@@ -1,0 +1,15 @@
+# Use an official GCC image from Docker Hub as a base image
+FROM docker.io/gcc:latest
+
+WORKDIR /home
+
+RUN apt update && apt install -y sudo git curl unzip tar zip gdb && rm -rf /var/lib/apt/lists/* \
+    && curl -L -o /home/cmake-3.31.4-linux-x86_64.sh https://github.com/Kitware/CMake/releases/download/v3.31.4/cmake-3.31.4-linux-x86_64.sh \
+    && sh /home/cmake-3.31.4-linux-x86_64.sh --skip-license --prefix=/usr \
+    && rm /home/cmake-3.31.4-linux-x86_64.sh \
+    && curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash \
+    && git clone https://github.com/Microsoft/vcpkg.git && cd vcpkg && ./bootstrap-vcpkg.sh
+
+WORKDIR /workspace/cppio
+
+CMD ["/bin/bash"]

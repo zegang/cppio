@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cppio-app.hsdServiceName" . }}
+  labels:
+    app: {{ include "cppio-app.hsdName" . }}
+spec:
+  selector:
+    app: {{ include "cppio-app.hsdName" . }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.hsd.service.port }}
+      targetPort: {{ .Values.hsd.service.targetPort }}
+  type: {{ .Values.hsd.service.type }}

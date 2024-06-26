@@ -1,0 +1,26 @@
+{
+  "name": "MyVolume1",
+  "type": "VOLUMETYPE_VOLUME",
+  "stripe_type": "VOLUMESTRIPETYPE_RAID1",
+  "storage_api_type": "STORAGEAPITYPE_FS",
+  "url": "/mnt/cppio/mirror2localmps",
+  "sub_volumes": [],
+  "storage_endpoints": [
+    {
+      "name": "MountPoint1",
+      "type": "VOLUMETYPE_LEAFVOLUME",
+      "url": "/cppiodata/mp1",
+      "state": 0,
+      "credentials": "",
+      "tags": []
+    },
+    {
+      "name": "MountPoint2",
+      "type": "VOLUMETYPE_LEAFVOLUME",
+      "url": "/cppiodata/mp2",
+      "state": "STORAGEENDPOINTSTATE_UNSPECIFIED",
+      "credentials": "",
+      "tags": []
+    }
+  ]
+}
