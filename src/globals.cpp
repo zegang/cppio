@@ -1,5 +1,4 @@
 #include "include/globals.hpp"
-#include "include/error.hpp"
 
 namespace cppio {
 

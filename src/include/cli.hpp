@@ -8,7 +8,7 @@
 #include <functional>
 #include <boost/program_options.hpp>
 #include "error.hpp"
-#include "context.hpp"
+#include <any>
 
 namespace cppio {
 
@@ -23,12 +23,14 @@ class Context;
 using BashCompleteFunc = std::function<void()>;
 using BeforeFunc = std::function<void()>;
 using AfterFunc = std::function<void()>;
-using ActionFunc = std::function<void(Context* ctx)>;
+using ActionFunc = std::function<Error(Context* ctx)>;
 using OnUsageErrorFunc = std::function<void(const std::string&)>;
 
 struct Author {
     std::string name;
     std::string email;
+
+    Author(std::string& name, std::string& email) : name(name), email(email) {}
 
     // Method to convert Author to string
     std::string toString() const {
@@ -62,7 +64,7 @@ public:
     // List of commands to execute
     std::vector<Command> commands;
     // List of options to parse
-    boost::program_options::options_description options;
+    boost::program_options::options_description* options;
     // Boolean to enable bash completion commands
     bool enableBashCompletion;
     // Boolean to hide built-in help flag
@@ -85,7 +87,7 @@ public:
     // The action to execute when no subcommands are specified
     // Expects a `cli.ActionFunc` but will accept the *deprecated* signature of `func(*cli.Context) {}`
     // *Note*: support for the deprecated `Action` signature will be removed in a future version
-    std::function<void()> action;
+    ActionFunc action;
 
     // Execute this function if the proper command cannot be found
     std::function<void()> commandNotFound;
@@ -130,6 +132,7 @@ public:
     void setCompiledTime(std::time_t time) { compiled = time; }
 
     // Other methods and functionality as per application needs
+    Command* command(const std::string& name);
     void setup();
     Error run(int argc, char* argv[]);
 };
@@ -152,7 +155,7 @@ public:
     ActionFunc action;                      // The function to call when this command is invoked
     OnUsageErrorFunc onUsageError;          // Execute this function if a usage error occurs
     Commands subcommands;                   // List of child commands
-    boost::program_options::options_description options;            // List of options to parse
+    boost::program_options::options_description* options;            // List of options to parse
     bool skipFlagParsing;                   // Treat all flags as normal arguments if true
     bool skipArgReorder;                    // Skip argument reordering which attempts to move flags before arguments
     bool hideHelp;                          // Boolean to hide built-in help flag
@@ -171,7 +174,9 @@ public:
 public:
     Error run(Context* ctx);
     Error startApp(Context* ctx);
-    boost::program_options::options_description& getOptions() { return options; }
+    std::vector<std::string> namesWithHiddenAliases();
+    bool hasName(const std::string& name);
+    boost::program_options::options_description* getOptions() { return options; }
 };
 
 // Context is a type that is passed through to
@@ -179,22 +184,23 @@ public:
 // can be used to retrieve context-specific Args and
 // parsed command-line options.
 class Context {
-private:
+public:
     App* app;
     Command command;
     bool shellComplete;
     int argc;
-    char* argv;
-    boost::program_options::variables_map optionSet;
+    char** argv;
+    // boost::program_options::variables_map optionSet;
     std::unordered_map<std::string, bool> setOptions;
     Context* parentContext;
 
 public:
     // Constructor
-    Context(App* app, int argc, char* argv, Context* parent)
-        : app(app), parentContext(parent) {
-            boost::program_options::store(
-                boost::program_options::parse_command_line(argc, argv, app->options), optionSet);
+    Context(App* app, int argc, char* argv[], Context* parent)
+        : app(app), argc(argc), argv(argv), parentContext(parent) {
+            // boost::program_options::store(
+            //     boost::program_options::parse_command_line(argc, argv, *app->options), optionSet);
+            // boost::program_options::notify(optionSet);
             if (parentContext) {
                 shellComplete = parentContext->shellComplete;
             }
@@ -214,7 +220,7 @@ public:
 
     // Args returns the command line arguments associated with the context.
     std::vector<std::string> args() {
-
+        return std::vector<std::string>();
     }
 };
 

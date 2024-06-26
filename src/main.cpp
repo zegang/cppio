@@ -2,23 +2,21 @@
 #include <filesystem> // For std::filesystem
 #include <vector>
 #include <string>
-
 #include "include/cli.hpp"
+#include <boost/program_options.hpp>
+#include "include/log.hpp"
 
 using namespace cppio;
 
 namespace fs = std::filesystem;
 namespace po = boost::program_options;
 
-po::options_description globalOptions("Global Options");
-globalOptions.add_options()
-    ("config-dir,C", po::value< string >(), "[DEPRECATED] path to legacy configuration directory")
-    ("certs-dir,S", po::value< string >(), "path to certs directory")
-    ("quiet", "disable startup and info messages")
-    ("anonymous", "hide sensitive information from logging");
+std::shared_ptr<spdlog::logger> gLogger;
+
+boost::program_options::options_description globalOptions("Options");
 
 // Help template for cppio.
-auto cppioHelpTemplate = R("NAME:
+auto cppioHelpTemplate = R"(NAME:
   {{.Name}} - {{.Usage}}
 
 DESCRIPTION:
@@ -35,32 +33,47 @@ FLAGS:
   {{end}}{{end}}
 VERSION:
   {{.Version}}
-");
+)";
 
 extern cli::Command serverCmd;
 
-std::shared_ptr<cli::App> newAPP(std::string& appName) {
+void init_logging() {
+    // Create a file logger
+    gLogger = spdlog::basic_logger_mt("file_logger", "logs/cppio.log");
+    // Set logging pattern (optional)
+    // spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] %v");
+}
+
+std::shared_ptr<cli::App> newApp(std::string& appName) {
+    globalOptions.add_options()
+      ("config-dir,C", po::value< std::string >(), "[DEPRECATED] path to legacy configuration directory")
+      ("certs-dir,S", po::value< std::string >(), "path to certs directory")
+      ("quiet", "disable startup and info messages")
+      ("anonymous", "hide sensitive information from logging");
+    
     auto app = std::make_shared<cli::App>(appName);
     app->author = "CppIO";
     app->version = "0.1";
     app->usage = "High Performance Object Storage";
     app->description = "Build high performance data infrastructure for machine learning, analytics and application data workloads with CppIO";
-    app.options = globalOptions;
+    app->options = &globalOptions;
     app->hideHelpCommand = true;
-
     app->commands.push_back(serverCmd);
     app->customAppHelpTemplate = cppioHelpTemplate;
     return app;
 }
 
 int main(int argc, char* argv[]) {
+
     if (argc == 0) {
         std::cerr << "Error: No arguments provided." << std::endl;
         return 1;
     }
 
-    std::string appName = fs::path(argv).filename();
-    std::cout << "CppIO app name: " << appName << std::endl;
+    init_logging();
+
+    std::string appName = fs::path(argv[0]).filename();
+    gLogger->info("CppIO app name: {}\n", appName);
 
     if (newApp(appName)->run(argc, argv) != nullptr) {
         return 1;

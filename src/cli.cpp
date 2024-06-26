@@ -3,20 +3,21 @@
 
 using namespace cppio;
 
+// boost::program_options::options_description helpCmdOpts("Options");
+// helpCmdOpts.add_options()("help", "more helps on cppio");
+
 cli::Command helpCommand{
     .name = "help",
     .aliases = std::vector<std::string>(1, "h"),
     .usage = "Shows a list of commands or help for one command",
     .argsUsage = "[command]",
-    .options = boost::program_options::options_description("Allowed options").add_options()
-                    ("help", "more helps on cppio"),
-    .action = [this](cli::Context* ctx) {
+    .action = [](cli::Context* ctx) {
         // auto args = ctx.args();
         // if (args.present()) {
         //     return showCommandHelp(ctx, args.first());
         // }
         // showAppHelp(ctx);
-        std::cout << this->getOptions() << std::endl;
+        std::cout << "helpCmdOpts" << std::endl;
         return nullptr;
     },
 };
@@ -26,7 +27,7 @@ Error cli::Command::run(cli::Context* ctx) {
         return startApp(ctx);
     }
 
-    if (action.target() == nullptr) {
+    if (!action) {
         action = helpCommand.action;
     }
 
@@ -39,6 +40,7 @@ Error cli::Command::startApp(cli::Context* ctx) {
 
 std::vector<std::string> cli::Command::namesWithHiddenAliases() {
     std::vector<std::string> names;
+    names.push_back(name);
     if (!shortName.empty()) {
         names.push_back(shortName);
     }
@@ -54,7 +56,7 @@ bool cli::Command::hasName(const std::string& name) {
 }
 
 // Command returns the named command on App. Returns nil if the command does not exist
-Command* cli::App::command(const std::string& name) {
+cli::Command* cli::App::command(const std::string& name) {
     for (auto& c : commands) {
         if (c.hasName(name)) {
             return &c;
@@ -74,18 +76,15 @@ void cli::App::setup() {
         authors.emplace_back(author, email);
     }
 
-    std::vector<Command> newCmds;
     for (auto& c : commands) {
         if (c.helpName.empty()) {
             std::ostringstream oss;
             oss << helpName << " " << name;
             c.helpName = oss.str();
         }
-        newCmds.push_back(c);
     }
-    commands = newCmds;
 
-    if (command(helpComand.name) == nullptr) {
+    if (command(helpCommand.name) == nullptr) {
         if (!hideHelpCommand) {
             commands.push_back(helpCommand);
         }
@@ -107,7 +106,7 @@ Error cli::App::run(int argc, char* argv[]) {
 
     cli::Context context(this, argc, argv, nullptr);
     if (before) {
-        error = errbefore(context);
+        error = before(context);
         if (error) {
             return error;
         }
@@ -118,7 +117,7 @@ Error cli::App::run(int argc, char* argv[]) {
         return c->run(&context);
     }
 
-    if (action.target() == nullptr) {
+    if (!action) {
         action = helpCommand.action;
     }
 

@@ -1,46 +1,26 @@
-#ifndef CPPIO_CLI_HPP
-#define CPPIO_CLI_HPP
+#ifndef CPPIO_ERROR_HPP
+#define CPPIO_ERROR_HPP
 
+#include <iostream>
 #include <string>
 #include <memory>
 
 namespace cppio {
 
-class ErrorObj {
-
-public:
-    ErrorObj(int c, const std::string& message) : code(c), msg(message) {}
-
-    std::string to_string() const {
-        return "Error[" +  std::to_string(code) + "]: " + msg;
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, const ErrorObj& error) {
-        os << error.to_string();
-        return os;
-    }
-
-private:
+struct ErrorObj {
     int code = 0;
     std::string msg;
 
+    std::string to_string() const;
 };
 
-typedef std::shared_ptr<ErrorObj> Error;
+using Error = std::shared_ptr<ErrorObj>;
 
-// Overload operator<< for Error (which is std::shared_ptr<ErrorObj>)
-std::ostream& operator<<(std::ostream& os, const Error& errorPtr) {
-    if (errorPtr) {
-        os << *errorPtr; // Dereference the shared_ptr to use the operator<< for ErrorObj
-    } else {
-        os << "No Error[nullptr]"; // Handle the case where Error is nullptr
-    }
-    return os;
-}
+extern std::ostream& operator<<(std::ostream& os, const ErrorObj& error);
 
-Error newError(int code, const std::string& message) {
-    return std::make_shared(ErrorObj(code, message));
-}
+extern std::ostream& operator<<(std::ostream& os, const Error errorPtr);
+
+extern Error newError(int code, const std::string& message);
 
 }
 

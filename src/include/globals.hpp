@@ -6,6 +6,7 @@
 #include <vector>
 #include <atomic>
 #include <mutex>
+#include <stdexcept>
 
 namespace cppio {
 

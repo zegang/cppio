@@ -1,49 +1,74 @@
-#include <vector>
-#include <string>
-#include <boost/program_options.hpp>
-
 #include "include/cli.hpp"
+#include <boost/program_options.hpp>
+#include "include/log.hpp"
 
 using namespace cppio;
 
-void serverMain(cli::Context* ctx);
-
-std::string config;
-std::string address;
+Error serverMain(cli::Context* ctx);
 
 boost::program_options::options_description serverCmdOptions("Options");
-serverCmdOptions.add_options()
-    ("config",
-        po::value<std::string>(&config)->default_value(""),
-        "specify server configuration via YAML configuration")
-    ("address",
-        po::value<std::string>(&address)->default_value(":9900"),
-        "bind to a specific ADDRESS:PORT, ADDRESS can be an IP or hostname");
-
 cli::Command serverCmd {
     .name = "server",
     .usage = "start object storage server",
-    .options = serverCmdOptions,
-    .action = ActionFunc(serverMain),
-    .customHelpTemplate = "NAME:  {{.HelpName}} - {{.Usage}}",
+    .action = cli::ActionFunc(serverMain),
+    .options = &serverCmdOptions,
+    .customHelpTemplate = R"(NAME:
+  {{.HelpName}} - {{.Usage}}
+
+USAGE:
+  {{.HelpName}} {{if .VisibleFlags}}[FLAGS] {{end}}DIR1 [DIR2..]
+  {{.HelpName}} {{if .VisibleFlags}}[FLAGS] {{end}}DIR{1...64}
+  {{.HelpName}} {{if .VisibleFlags}}[FLAGS] {{end}}DIR{1...64} DIR{65...128}
+
+DIR:
+  DIR points to a directory on a filesystem. When you want to combine
+  multiple drives into a single large system, pass one directory per
+  filesystem separated by space. You may also use a '...' convention
+  to abbreviate the directory arguments. Remote directories in a
+  distributed setup are encoded as HTTP(s) URIs.
+{{if .VisibleFlags}}
+FLAGS:
+  {{range .VisibleFlags}}{{.}}
+  {{end}}{{end}}
+EXAMPLES:
+  1. Start CppIO server on "/home/shared" directory.
+     {{.Prompt}} {{.HelpName}} /home/shared
+
+  2. Start single node server with 64 local drives "/mnt/data1" to "/mnt/data64".
+     {{.Prompt}} {{.HelpName}} /mnt/data{1...64}
+
+  3. Start distributed CppIO server on an 32 node setup with 32 drives each, run following command on all the nodes
+     {{.Prompt}} {{.HelpName}} http://node{1...32}.example.com/mnt/export{1...32}
+
+  4. Start distributed CppIO server in an expanded setup, run the following command on all the nodes
+     {{.Prompt}} {{.HelpName}} http://node{1...16}.example.com/mnt/export{1...32} \
+            http://node{17...64}.example.com/mnt/export{1...64}
+
+  5. Start distributed CppIO server, with FTP and SFTP servers on all interfaces via port 8021, 8022 respectively
+     {{.Prompt}} {{.HelpName}} http://node{1...4}.example.com/mnt/export{1...4} \
+           --ftp="address=:8021" --ftp="passive-port-range=30000-40000" \
+           --sftp="address=:8022" --sftp="ssh-private-key=${HOME}/.ssh/id_rsa"
+)",
 };
 
 Error serverMain(cli::Context* ctx) {
     Error err = nullptr;
+    std::string config;
+    serverCmd.options->add_options()
+        ("config,C",
+            boost::program_options::value< std::string >(&config)->default_value("Config"),
+            "specify server configuration via YAML configuration")
+        ("address,A",
+            boost::program_options::value< std::string >(),
+            "bind to a specific ADDRESS:PORT, ADDRESS can be an IP or hostname");
 
     boost::program_options::variables_map optionSet;
-    try {
-        boost::program_options::store(
-            boost::program_options::parse_command_line(ctx->argc, ctx->argv, serverCmdOptions),
-            optionSet);
-        boost::program_options::notify(optionSet);
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        return newError(1, e.what());
-    }
-
-    std::cout << "Config: " << config << std::endl;
-    std::cout << "Address: " << address << std::endl;
+    boost::program_options::store(
+        boost::program_options::parse_command_line(ctx->argc, ctx->argv, *(serverCmd.options)),
+        optionSet);
+    boost::program_options::notify(optionSet);
+    std::cout << serverCmdOptions << std::endl;
+    gLogger->info("Your input for --config={}", config);
 
     return err;
 }
