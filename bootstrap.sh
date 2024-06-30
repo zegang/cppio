@@ -20,7 +20,7 @@ cd ${BOOST_SRC}
 # Bootstrap Boost.Build
 ./bootstrap.sh --prefix=${BOOST_INSTALL_DIR}
 # Build Boost libraries (adjust --with options as needed)
-./b2 --prefix=${BOOST_INSTALL_DIR} --with-program_options toolset=gcc-14 cxxflags=${CXXFLAGS}
+./b2 --prefix=${BOOST_INSTALL_DIR} --with-program_options --with-beast --with-asio toolset=gcc-14 cxxflags=${CXXFLAGS}
 # ./b2 --prefix=${INSTALL_DIR} --with-program_options link=static runtime-link=static
 # Install Boost libraries
 ./b2 install

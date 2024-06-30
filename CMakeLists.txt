@@ -54,6 +54,9 @@ message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
 message(STATUS "Boost_LIBRARIES: ${Boost_LIBRARIES}")
 message(STATUS "Boost_PROGRAM_OPTIONS_FOUND: ${Boost_PROGRAM_OPTIONS_FOUND}")
 
+# Specify additional include directories for Boost headers
+include_directories(${Boost_INCLUDE_DIRS})
+
 # Example with explicit compiler flags
 # if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 #     add_compile_options(-std=c++14)
@@ -79,7 +82,7 @@ add_executable(cppio ${SOURCES})
 # Include directories for Boost headers
 target_include_directories(cppio PRIVATE ${Boost_INCLUDE_DIRS})
 # Link Boost libraries
-target_link_libraries(cppio PRIVATE  Boost::program_options spdlog::spdlog_header_only)
+target_link_libraries(cppio PRIVATE ${Boost_LIBRARIES} spdlog::spdlog_header_only)
 
 # Set C++ standard
 set_target_properties(cppio PROPERTIES CXX_STANDARD 20)

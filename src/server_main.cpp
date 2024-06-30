@@ -1,6 +1,7 @@
 #include "include/cli.hpp"
 #include <boost/program_options.hpp>
 #include "include/log.hpp"
+#include "include/httpserver.hpp"
 
 using namespace cppio;
 
@@ -69,6 +70,9 @@ Error serverMain(cli::Context* ctx) {
     boost::program_options::notify(optionSet);
     std::cout << serverCmdOptions << std::endl;
     gLogger->info("Your input for --config={}", config);
+
+    HttpServer httpServer;
+    httpServer.start();
 
     return err;
 }
