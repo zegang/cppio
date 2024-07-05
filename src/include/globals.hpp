@@ -7,46 +7,9 @@
 #include <atomic>
 #include <mutex>
 #include <stdexcept>
+#include "layout.hpp"
 
 namespace cppio {
-
-// Define PoolDisksLayout struct
-struct PoolDisksLayout {
-    std::string cmdline;
-    std::vector<std::vector<std::string>> layout;
-};
-
-// Define DisksLayout struct
-struct DisksLayout {
-    bool legacy;
-    std::vector<PoolDisksLayout> pools;
-};
-
-// Define serverCtxt struct
-struct ServerCtxt {
-    bool json;
-    bool quiet;
-    bool anonymous;
-    bool strictS3Compat;
-    std::string addr, consoleAddr, configDir, certsDir;
-    bool configDirSet, certsDirSet;
-    std::string interface;
-    std::string rootUser, rootPwd;
-    std::vector<std::string> ftp, sftp;
-    std::chrono::seconds userTimeout;
-    std::chrono::seconds connReadDeadline;
-    std::chrono::seconds connWriteDeadline;
-    std::chrono::seconds connClientReadDeadline;
-    std::chrono::seconds connClientWriteDeadline;
-    std::chrono::seconds shutdownTimeout, idleTimeout, readHeaderTimeout;
-    int maxIdleConnsPerHost;
-    // Nested struct
-    DisksLayout* layout;
-
-    // Constructor for initialization
-    ServerCtxt() : json(false), quiet(false), anonymous(false), strictS3Compat(false),
-                   configDirSet(false), certsDirSet(false), maxIdleConnsPerHost(0) {}
-};
 
 extern const std::string GlobalMinioDefaultPor;
 extern const std::string globalMinioDefaultRegion;
@@ -100,15 +63,8 @@ extern std::atomic<bool> globalBrowserEnabled;
 extern std::mutex globalCppioAddr_mtx;   // Mutex for synchronization
 extern std::string globalCppioAddr;      // Global string variable
 
-void setGlobalCppioAddr(const std::string& addr) {
-    std::lock_guard<std::mutex> lock(globalCppioAddr_mtx);
-    globalCppioAddr = addr;
-}
-
-std::string getLobalCppioAddr() {
-    std::lock_guard<std::mutex> lock(globalCppioAddr_mtx);
-    return globalCppioAddr;
-}
+void setGlobalCppioAddr(const std::string& addr);
+std::string getLobalCppioAddr();
 
 extern const std::runtime_error errSelfTestFailure; // Declaration of global error variable
 

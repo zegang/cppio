@@ -4,6 +4,8 @@
 #include <boost/url/url.hpp>
 #include <boost/url/parse.hpp>
 #include <boost/system/result.hpp>
+#include <filesystem>
+#include "layout.hpp"
 
 namespace cppio {
 
@@ -15,20 +17,6 @@ class EndpointServerPools;  // EndpointServerPools - list of list of endpoints
 
 extern EndpointServerPools globalEndpoints;
 
-class PoolDisksLayout {
-    std::string                                 cmdLine;
-    std::vector< vector< std::string > >        layout;
-
-public:
-    bool isSingleDriveLayout() {
-        return layout.size() == 1 && layout[0].size() == 1;
-    }
-
-    bool isEmptyLayout() {
-        return layout.size() == 0 || layout[0].size() == 0 || layout[0][0].empty();
-    }
-};
-
 enum EndpointType {
     PathEndpointType,
     URLEndpointType
@@ -39,7 +27,7 @@ class Node {
 protected:
     boost::urls::url    url;
     std::vector<int>    pools;
-    boo                 isLocal;
+    bool                isLocal;
     std::string         gridHost;
 };
 
@@ -47,39 +35,39 @@ class Endpoint {
 
 public:
     Endpoint(std::string uri) {
-        if (arg.empty()) {
-            throw std::invliad_argument("Empty URI");
-        }
-        boost::system::result< url > ru = boost::urls::parse_uri_reference(uri);
-        if (ru) {
-            url = *ru;
-            isLocal = false;
-        } else {
-            // Not an URI, try on Path
-            path = uri;
-            isLocal = true;
-        }
+        // if (arg.empty()) {
+        //     throw std::invalid_argument("Empty URI");
+        // }
+        // boost::system::result< url > ru = boost::urls::parse_uri_reference(uri);
+        // if (ru) {
+        //     url = *ru;
+        //     isLocal = false;
+        // } else {
+        //     // Not an URI, try on Path
+        //     path = uri;
+        //     isLocal = true;
+        // }
     }
 
 public:
-    bool equal(Endpoint* ep) {
-        if (isLocal == ep.isLocal && poolIdx == ep.poolIdx &&
-            setIdx == ep.poolIdx && diskIdx == ep.diskIdx) {
-                if (url->path == ep->url->path && url->host == ep->url->host) {
-                    return true;
-                }
-        }
-        return false;
-    }
+    // bool equal(Endpoint* ep) {
+    //     if (isLocal == ep->isLocal && poolIdx == ep->poolIdx &&
+    //         setIdx == ep->poolIdx && diskIdx == ep->diskIdx) {
+    //             if (url.path == ep->url.path && url.host == ep->url.host) {
+    //                 return true;
+    //             }
+    //     }
+    //     return false;
+    // }
 
-    EndpointType type() {
-        if (url->host == "") {
-            return PathEndpointType;
-        }
-        return URLEndpointType;
-    }
+    // EndpointType type() {
+    //     if (url.host == "") {
+    //         return PathEndpointType;
+    //     }
+    //     return URLEndpointType;
+    // }
 
-protected:
+public:
     boost::urls::url        url;
     std::filesystem::path   path;
     bool                    isLocal     = true;
@@ -107,7 +95,7 @@ public:
         platform        = "OS: linux | Arch: "; 
     }
 
-protected:
+public:
     bool                    legacy;
     int                     setCount;
     int                     driversPerSet;
@@ -121,7 +109,7 @@ class EndpointServerPools {
 public:
     EndpointServerPools(std::string serverAddr, std::vector<PoolDisksLayout> poolArgs, bool legacy) {
         if (poolArgs.size() == 0) {
-            throw std::invliad_argument("EndpointServerPools: No PoolDisksLayout");
+            throw std::invalid_argument("EndpointServerPools: No PoolDisksLayout");
         }
 
         for (auto& pool : poolArgs) {
@@ -145,7 +133,7 @@ public:
     }
 
     void add(PoolEndpoints peps) {
-        PoolEndpoints.push_back(peps);
+        poolEndpoints.push_back(peps);
     }
 
 protected:

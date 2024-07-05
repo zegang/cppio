@@ -19,7 +19,7 @@ set(CMAKE_CXX_COMPILER "/usr/local/gcc-14/bin/c++")
 # Set C++ compiler flags
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++20")
 # Optionally, set debug-specific flags
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -gdwarf-2")
 # Optionally, set release-specific flags
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 # Specify the path to libstdc++.so

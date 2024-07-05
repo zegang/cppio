@@ -1,18 +1,30 @@
 #include "include/cli.hpp"
 #include <boost/program_options.hpp>
+#include <boost/algorithm/string.hpp>
 #include "include/log.hpp"
 #include "include/httpserver.hpp"
+#include "include/globals.hpp"
+#include "include/endpoint.hpp"
 
 using namespace cppio;
 
+Error mergeDisksLayoutFromArgs(std::vector<std::string> args, ServerCtxt *ctxt);
+Error buildServerCtxt(cli::Context* ctx, ServerCtxt *ctxt);
+
+std::vector<std::string> serverCmdArgs(cli::Context* ctx);
+void serverHandleCmdArgs(ServerCtxt *ctxt);
 Error serverMain(cli::Context* ctx);
 
-boost::program_options::options_description serverCmdOptions("Options");
+std::shared_ptr<EndpointServerPools> createServerEndpoints(std::string serverAddr,
+    std::vector<PoolDisksLayout> poolArgs, bool legacy);
+
+
+// boost::program_options::options_description serverCmdOptions("Options");
 cli::Command serverCmd {
     .name = "server",
     .usage = "start object storage server",
     .action = cli::ActionFunc(serverMain),
-    .options = &serverCmdOptions,
+    .flag = { .options = std::make_shared<boost::program_options::options_description>("Command Server Options") },
     .customHelpTemplate = R"(NAME:
   {{.HelpName}} - {{.Usage}}
 
@@ -54,25 +66,88 @@ EXAMPLES:
 
 Error serverMain(cli::Context* ctx) {
     Error err = nullptr;
-    std::string config;
-    serverCmd.options->add_options()
+  
+    serverCmd.flag.options->add_options()
         ("config,C",
-            boost::program_options::value< std::string >(&config)->default_value("Config"),
+            boost::program_options::value< std::string >(),
             "specify server configuration via YAML configuration")
         ("address,A",
             boost::program_options::value< std::string >(),
-            "bind to a specific ADDRESS:PORT, ADDRESS can be an IP or hostname");
+            "bind to a specific ADDRESS:PORT, ADDRESS can be an IP or hostname")
+        ("flag,f", boost::program_options::bool_switch(), "Boolean flag option")
+        ("positional", boost::program_options::value< std::vector<std::string> >());
 
-    boost::program_options::variables_map optionSet;
-    boost::program_options::store(
-        boost::program_options::parse_command_line(ctx->argc, ctx->argv, *(serverCmd.options)),
-        optionSet);
-    boost::program_options::notify(optionSet);
-    std::cout << serverCmdOptions << std::endl;
-    gLogger->info("Your input for --config={}", config);
+    serverCmd.flag.parse(ctx->argc, ctx->argv);
+  
+    std::cout << *serverCmd.flag.options << std::endl;
 
-    HttpServer httpServer;
-    httpServer.start();
+    if (serverCmd.flag.count("config")) {
+        std::cout << "Your input for --config=" << serverCmd.flag["config"].as< std::string >() << std::endl;
+        gLogger->info("Your input for --config={}", serverCmd.flag["config"].as< std::string >());
+    }
+
+    if (serverCmd.flag.count("positional")) {
+        std::cout << "Positional arguments:";
+        for (const auto& arg : serverCmd.flag["positional"].as< std::vector<std::string> >()) {
+            std::cout << " " << arg;
+        }
+        std::cout << std::endl;
+    }
+    
+    // HttpServer httpServer;
+    // httpServer.start();
+
+    // buildServerCtxt(ctx, &globalServerCtxt);
+    // serverHandleCmdArgs(&globalServerCtxt);
 
     return err;
+}
+
+Error buildServerCtxt(cli::Context* ctx, ServerCtxt *ctxt)
+{
+  return mergeDisksLayoutFromArgs(ctx->args(), ctxt);
+}
+
+Error mergeDisksLayoutFromArgs(std::vector<std::string> args, ServerCtxt *ctxt)
+{
+    ctxt->layout.legacy = true;
+    // PoolDisksLayout pdl;
+    // pdl.layout.pop_back(args);
+    // ctxt->layout.pools.push_back(pdl);
+    return nullptr;
+}
+
+std::vector<std::string> serverCmdArgs(cli::Context* ctx)
+{
+    std::vector<std::string> tokens;
+    // boost::algorithm::split(tokens, "");
+    return tokens;
+}
+
+void serverHandleCmdArgs(ServerCtxt *ctxt)
+{
+    // globalEndpoints, setupType, err = createServerEndpoints(globalMinioAddr, ctxt.Layout.pools, ctxt.Layout.legacy)
+    // globalNodes = globalEndpoints.GetNodes()
+    // globalIsErasure = (setupType == ErasureSetupType)
+    // globalIsDistErasure = (setupType == DistErasureSetupType)
+    // if globalIsDistErasure {
+    //   globalIsErasure = true
+    // }
+    // globalIsErasureSD = (setupType == ErasureSDSetupType)
+    // if globalDynamicAPIPort && globalIsDistErasure {
+    //   logger.FatalIf(errInvalidArgument, "Invalid --address=\"%s\", port '0' is not allowed in a distributed erasure coded setup", ctxt.Addr)
+    // }
+
+    // globalLocalNodeName = GetLocalPeer(globalEndpoints, globalMinioHost, globalMinioPort)
+}
+
+std::shared_ptr<EndpointServerPools>
+createServerEndpoints(std::string serverAddr,
+                      std::vector<PoolDisksLayout> poolArgs,
+                      bool legacy)
+{
+    if (poolArgs.empty()) {
+        return nullptr;
+    }
+    return nullptr;
 }

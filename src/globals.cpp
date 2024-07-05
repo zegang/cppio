@@ -56,4 +56,14 @@ std::string globalCppioAddr = ""; // Global string variable
 
 const std::runtime_error errSelfTestFailure("self test failed. unsafe to start server"); // Definition of global error variable
 
+void setGlobalCppioAddr(const std::string& addr) {
+    std::lock_guard<std::mutex> lock(globalCppioAddr_mtx);
+    globalCppioAddr = addr;
+}
+
+std::string getLobalCppioAddr() {
+    std::lock_guard<std::mutex> lock(globalCppioAddr_mtx);
+    return globalCppioAddr;
+}
+
 }

@@ -26,6 +26,23 @@ using AfterFunc = std::function<void()>;
 using ActionFunc = std::function<Error(Context* ctx)>;
 using OnUsageErrorFunc = std::function<void(const std::string&)>;
 
+struct Flag {
+    boost::program_options::variables_map optionSet;
+    boost::program_options::positional_options_description positionalSet;
+    std::shared_ptr<boost::program_options::options_description> options;
+
+    void parse(int argc, char** argv) {
+        positionalSet.add("positional", -1);
+        boost::program_options::store(
+            boost::program_options::command_line_parser(argc-1, &argv[1]).options(*options).positional(positionalSet).run(),
+            optionSet);
+        boost::program_options::notify(optionSet);
+    }
+
+    bool count(std::string flag) { return optionSet.count(flag); }
+    auto& operator[](std::string flag) { return optionSet[flag]; }
+};
+
 struct Author {
     std::string name;
     std::string email;
@@ -140,6 +157,7 @@ public:
 
 // Command structure in C++
 class Command {
+
 public:
     std::string name;                       // The name of the command
     std::string shortName;                  // short name of the command. Typically one character (deprecated, use `Aliases`)
@@ -155,7 +173,7 @@ public:
     ActionFunc action;                      // The function to call when this command is invoked
     OnUsageErrorFunc onUsageError;          // Execute this function if a usage error occurs
     Commands subcommands;                   // List of child commands
-    boost::program_options::options_description* options;            // List of options to parse
+    Flag flag;                              // List of options to parse
     bool skipFlagParsing;                   // Treat all flags as normal arguments if true
     bool skipArgReorder;                    // Skip argument reordering which attempts to move flags before arguments
     bool hideHelp;                          // Boolean to hide built-in help flag
@@ -176,7 +194,7 @@ public:
     Error startApp(Context* ctx);
     std::vector<std::string> namesWithHiddenAliases();
     bool hasName(const std::string& name);
-    boost::program_options::options_description* getOptions() { return options; }
+    // auto getOptions() { return options; }
 };
 
 // Context is a type that is passed through to
