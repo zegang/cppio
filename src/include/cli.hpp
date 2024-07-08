@@ -16,7 +16,7 @@ namespace cli {
 
 class App;
 class Command;
-typedef std::vector<Command> Commands;
+typedef std::vector<Command*> Commands;
 class Context;
 
 // Define function types for callbacks
@@ -26,21 +26,31 @@ using AfterFunc = std::function<void()>;
 using ActionFunc = std::function<Error(Context* ctx)>;
 using OnUsageErrorFunc = std::function<void(const std::string&)>;
 
-struct Flag {
+struct Flags {
+    bool isParsed = false;
     boost::program_options::variables_map optionSet;
     boost::program_options::positional_options_description positionalSet;
-    std::shared_ptr<boost::program_options::options_description> options;
+    std::shared_ptr<boost::program_options::options_description> optionsDescription;
 
     void parse(int argc, char** argv) {
         positionalSet.add("positional", -1);
         boost::program_options::store(
-            boost::program_options::command_line_parser(argc-1, &argv[1]).options(*options).positional(positionalSet).run(),
+            boost::program_options::command_line_parser(argc-1, &argv[1]).options(*optionsDescription).positional(positionalSet).run(),
             optionSet);
         boost::program_options::notify(optionSet);
+        isParsed = true;
     }
 
     bool count(std::string flag) { return optionSet.count(flag); }
     auto& operator[](std::string flag) { return optionSet[flag]; }
+    auto args() {
+        if (isParsed) {
+            if (count("positional")) {
+                return optionSet["positional"].as< std::vector<std::string> >();
+            }
+        }
+        return std::vector<std::string>();
+    }
 };
 
 struct Author {
@@ -79,9 +89,9 @@ public:
     // Description of the program
     std::string description;
     // List of commands to execute
-    std::vector<Command> commands;
+    Commands commands;
     // List of options to parse
-    boost::program_options::options_description* options;
+    Flags flags;
     // Boolean to enable bash completion commands
     bool enableBashCompletion;
     // Boolean to hide built-in help flag
@@ -91,7 +101,7 @@ public:
     // Boolean to hide built-in version flag and the VERSION section of help
     bool hideVersion;
     // Populate on app startup, only gettable through method Categories()
-    std::map<std::string, std::vector<Command>> categories;
+    std::map<std::string, Commands> categories;
     // An action to execute when the bash-completion flag is set
     std::function<void()> bashComplete;
     // An action to execute before any subcommands are run, but after the context is ready
@@ -173,7 +183,7 @@ public:
     ActionFunc action;                      // The function to call when this command is invoked
     OnUsageErrorFunc onUsageError;          // Execute this function if a usage error occurs
     Commands subcommands;                   // List of child commands
-    Flag flag;                              // List of options to parse
+    Flags flags;                            // List of options to parse
     bool skipFlagParsing;                   // Treat all flags as normal arguments if true
     bool skipArgReorder;                    // Skip argument reordering which attempts to move flags before arguments
     bool hideHelp;                          // Boolean to hide built-in help flag
@@ -204,7 +214,7 @@ public:
 class Context {
 public:
     App* app;
-    Command command;
+    Command* command;
     bool shellComplete;
     int argc;
     char** argv;
@@ -238,7 +248,7 @@ public:
 
     // Args returns the command line arguments associated with the context.
     std::vector<std::string> args() {
-        return std::vector<std::string>();
+        return command->flags.args();
     }
 };
 

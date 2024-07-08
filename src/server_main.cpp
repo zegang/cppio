@@ -15,16 +15,17 @@ std::vector<std::string> serverCmdArgs(cli::Context* ctx);
 void serverHandleCmdArgs(ServerCtxt *ctxt);
 Error serverMain(cli::Context* ctx);
 
-std::shared_ptr<EndpointServerPools> createServerEndpoints(std::string serverAddr,
-    std::vector<PoolDisksLayout> poolArgs, bool legacy);
-
+std::vector<PoolEndpoints>
+createPoolEndpoints(std::string serverAddr, std::vector<PoolDisksLayout>& poolsLayout);
+void createServerEndpoints(std::string serverAddr,
+    std::vector<PoolDisksLayout>& poolArgs, bool legacy);
 
 // boost::program_options::options_description serverCmdOptions("Options");
 cli::Command serverCmd {
     .name = "server",
     .usage = "start object storage server",
     .action = cli::ActionFunc(serverMain),
-    .flag = { .options = std::make_shared<boost::program_options::options_description>("Command Server Options") },
+    .flags = { .optionsDescription = std::make_shared<boost::program_options::options_description>("Command Server Options") },
     .customHelpTemplate = R"(NAME:
   {{.HelpName}} - {{.Usage}}
 
@@ -66,8 +67,10 @@ EXAMPLES:
 
 Error serverMain(cli::Context* ctx) {
     Error err = nullptr;
+
+    // assert(ctx->command == &serverCmd);
   
-    serverCmd.flag.options->add_options()
+    serverCmd.flags.optionsDescription->add_options()
         ("config,C",
             boost::program_options::value< std::string >(),
             "specify server configuration via YAML configuration")
@@ -77,43 +80,60 @@ Error serverMain(cli::Context* ctx) {
         ("flag,f", boost::program_options::bool_switch(), "Boolean flag option")
         ("positional", boost::program_options::value< std::vector<std::string> >());
 
-    serverCmd.flag.parse(ctx->argc, ctx->argv);
+    serverCmd.flags.parse(ctx->argc, ctx->argv);
   
-    std::cout << *serverCmd.flag.options << std::endl;
+    std::cout << *serverCmd.flags.optionsDescription << std::endl;
 
-    if (serverCmd.flag.count("config")) {
-        std::cout << "Your input for --config=" << serverCmd.flag["config"].as< std::string >() << std::endl;
-        gLogger->info("Your input for --config={}", serverCmd.flag["config"].as< std::string >());
+    if (serverCmd.flags.count("config")) {
+        std::cout << "Your input for --config=" << serverCmd.flags["config"].as< std::string >() << std::endl;
+        gLogger->info("Your input for --config={}", serverCmd.flags["config"].as< std::string >());
     }
 
-    if (serverCmd.flag.count("positional")) {
-        std::cout << "Positional arguments:";
-        for (const auto& arg : serverCmd.flag["positional"].as< std::vector<std::string> >()) {
-            std::cout << " " << arg;
-        }
-        std::cout << std::endl;
+    std::cout << "Positional arguments:";
+    for (const auto& arg : serverCmd.flags.args()) {
+        std::cout << " " << arg;
     }
+    std::cout << std::endl;
+
+    std::cout << "Positional arguments:";
+    for (const auto& arg : serverCmd.flags.args()) {
+        std::cout << " " << arg;
+    }
+    std::cout << std::endl;
     
     // HttpServer httpServer;
     // httpServer.start();
 
-    // buildServerCtxt(ctx, &globalServerCtxt);
-    // serverHandleCmdArgs(&globalServerCtxt);
+    buildServerCtxt(ctx, &globalServerCtxt);
+    serverHandleCmdArgs(&globalServerCtxt);
+    // newObject, err = newObjectLayer(GlobalContext, globalEndpoints)
+    // newObject = newErasureServerPools(ctx, endpointServerPools)
 
     return err;
 }
 
 Error buildServerCtxt(cli::Context* ctx, ServerCtxt *ctxt)
 {
-  return mergeDisksLayoutFromArgs(ctx->args(), ctxt);
+    if (ctx->command->flags.count("address")) {
+        ctxt->addr = ctx->command->flags["address"].as< std::string >();
+    }
+    
+    return mergeDisksLayoutFromArgs(ctx->args(), ctxt);
 }
 
+// mergeDisksLayoutFromArgs supports with and without ellipses transparently.
 Error mergeDisksLayoutFromArgs(std::vector<std::string> args, ServerCtxt *ctxt)
 {
     ctxt->layout.legacy = true;
-    // PoolDisksLayout pdl;
-    // pdl.layout.pop_back(args);
-    // ctxt->layout.pools.push_back(pdl);
+    for (auto& arg : args) {
+        std::cout << "mergeDisksLayoutFromArgs, arg: " << arg << std::endl;
+        PoolDisksLayout pdl;
+        pdl.cmdLine = arg;
+        auto disks = std::vector<std::string>();
+        disks.emplace_back(arg);
+        pdl.layout.push_back(disks);
+        ctxt->layout.pools.push_back(pdl);
+    }
     return nullptr;
 }
 
@@ -126,7 +146,8 @@ std::vector<std::string> serverCmdArgs(cli::Context* ctx)
 
 void serverHandleCmdArgs(ServerCtxt *ctxt)
 {
-    // globalEndpoints, setupType, err = createServerEndpoints(globalMinioAddr, ctxt.Layout.pools, ctxt.Layout.legacy)
+    createServerEndpoints(globalMinioAddr, ctxt->layout.pools, ctxt->layout.legacy);
+
     // globalNodes = globalEndpoints.GetNodes()
     // globalIsErasure = (setupType == ErasureSetupType)
     // globalIsDistErasure = (setupType == DistErasureSetupType)
@@ -141,13 +162,50 @@ void serverHandleCmdArgs(ServerCtxt *ctxt)
     // globalLocalNodeName = GetLocalPeer(globalEndpoints, globalMinioHost, globalMinioPort)
 }
 
-std::shared_ptr<EndpointServerPools>
+std::vector<PoolEndpoints>
+createPoolEndpoints(std::string serverAddr, std::vector<PoolDisksLayout>& poolsLayout) {
+    std::vector<PoolEndpoints> poolEndpoints(1);
+
+    // For single arg, return single drive EC setup.
+    Endpoint endpoint;
+    endpoint.path = poolsLayout[0].layout[0][0];
+    endpoint.poolIndex = 0;
+    endpoint.setIndex = 0;
+    endpoint.diskIndex = 0;
+
+    poolEndpoints[0].endpoints.push_back(endpoint);
+    return poolEndpoints;
+}
+
+// CreateServerEndpoints - validates and creates new endpoints from input args, supports
+// both ellipses and without ellipses transparently.
+void
 createServerEndpoints(std::string serverAddr,
-                      std::vector<PoolDisksLayout> poolArgs,
+                      std::vector<PoolDisksLayout>& poolArgs,
                       bool legacy)
 {
-    if (poolArgs.empty()) {
-        return nullptr;
+    assert(!poolArgs.empty());
+
+    auto poolEndpoints = createPoolEndpoints(serverAddr, poolArgs);
+    auto endpointServerPools = &globalEndpoints;
+
+    for (auto i = 0; i < poolEndpoints.size(); ++i) {
+        PoolEndpoints eps;
+        eps.legacy = legacy;
+        eps.setCount = poolArgs[i].layout.size();
+        eps.driversPerSet = poolArgs[i].layout[0].size();
+        eps.endpoints = poolEndpoints[i].endpoints;
+        eps.platform = []() {
+                            std::stringstream ss;
+                            ss << "OS: " << "your_GOOS_value" << " | Arch: " << "your_GOARCH_value";
+                            return ss.str();
+                        }();
+        eps.cmdLine = poolArgs[i].cmdLine;
+        endpointServerPools->add(eps);
+        std::cout << "endpointServerPools Index " << i << ", endpoints ";
+        for (auto& ep : eps.endpoints) {
+            std::cout << " - path: " << ep.path;
+        }
+        std::cout << std::endl;
     }
-    return nullptr;
 }

@@ -34,6 +34,7 @@ protected:
 class Endpoint {
 
 public:
+    Endpoint() = default;
     Endpoint(std::string uri) {
         // if (arg.empty()) {
         //     throw std::invalid_argument("Empty URI");
@@ -68,25 +69,26 @@ public:
     // }
 
 public:
-    boost::urls::url        url;
+    // boost::urls::url        url;
     std::filesystem::path   path;
     bool                    isLocal     = true;
-    int                     poolIdx     = -1;
-    int                     setIdx      = -1;
-    int                     diskIdx     = -1;
+    int                     poolIndex   = -1;
+    int                     setIndex    = -1;
+    int                     diskIndex   = -1;
 };
 
 class PoolEndpoints {
 
 public:
+    PoolEndpoints() = default;
     PoolEndpoints(std::string& serverAddr, PoolDisksLayout& pdsl) {
 
         if (pdsl.isSingleDriveLayout()) {
             endpoints.push_back(Endpoint(pdsl.layout[0][0]));
             assert(endpoints.size() == 1);
-            endpoints[0].poolIdx    = 0;
-            endpoints[0].setIdx     = 0;
-            endpoints[0].diskIdx    = 0;
+            endpoints[0].poolIndex  = 0;
+            endpoints[0].setIndex   = 0;
+            endpoints[0].diskIndex  = 0;
         }
 
         setCount        = pdsl.layout.size();
@@ -107,6 +109,7 @@ public:
 class EndpointServerPools {
 
 public:
+    EndpointServerPools() = default;
     EndpointServerPools(std::string serverAddr, std::vector<PoolDisksLayout> poolArgs, bool legacy) {
         if (poolArgs.size() == 0) {
             throw std::invalid_argument("EndpointServerPools: No PoolDisksLayout");

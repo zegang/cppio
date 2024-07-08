@@ -2,6 +2,9 @@
 
 namespace cppio {
 
+std::string globalMinioAddr = "127.0.0.1";
+EndpointServerPools globalEndpoints;
+
 const std::string GlobalMinioDefaultPort = "9000";
 const std::string globalMinioDefaultRegion = "";
 // This is a sha256 output of ``arn:aws:iam::minio:user/admin``,

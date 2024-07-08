@@ -8,8 +8,12 @@
 #include <mutex>
 #include <stdexcept>
 #include "layout.hpp"
+#include "endpoint.hpp"
 
 namespace cppio {
+
+extern std::string globalMinioAddr;
+extern EndpointServerPools globalEndpoints;
 
 extern const std::string GlobalMinioDefaultPor;
 extern const std::string globalMinioDefaultRegion;

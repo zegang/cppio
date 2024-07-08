@@ -58,8 +58,8 @@ bool cli::Command::hasName(const std::string& name) {
 // Command returns the named command on App. Returns nil if the command does not exist
 cli::Command* cli::App::command(const std::string& name) {
     for (auto& c : commands) {
-        if (c.hasName(name)) {
-            return &c;
+        if (c->hasName(name)) {
+            return c;
         }
     }
 
@@ -77,16 +77,16 @@ void cli::App::setup() {
     }
 
     for (auto& c : commands) {
-        if (c.helpName.empty()) {
+        if (c->helpName.empty()) {
             std::ostringstream oss;
-            oss << helpName << " " << name;
-            c.helpName = oss.str();
+            oss << helpName << " " << c->name;
+            c->helpName = oss.str();
         }
     }
 
     if (command(helpCommand.name) == nullptr) {
         if (!hideHelpCommand) {
-            commands.push_back(helpCommand);
+            commands.push_back(&helpCommand);
         }
     }
 
@@ -114,6 +114,7 @@ Error cli::App::run(int argc, char* argv[]) {
 
     auto c = command(argv[1]);
     if (c) {
+        context.command = c;
         return c->run(&context);
     }
 

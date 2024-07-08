@@ -13,8 +13,6 @@ namespace po = boost::program_options;
 
 std::shared_ptr<spdlog::logger> gLogger;
 
-boost::program_options::options_description globalOptions("Options");
-
 // Help template for cppio.
 auto cppioHelpTemplate = R"(NAME:
   {{.Name}} - {{.Usage}}
@@ -45,7 +43,8 @@ void init_logging() {
 }
 
 std::shared_ptr<cli::App> newApp(std::string& appName) {
-    globalOptions.add_options()
+    auto globalOptions = std::make_shared<boost::program_options::options_description>("Global Options");
+    globalOptions->add_options()
       ("config-dir,C", po::value< std::string >(), "[DEPRECATED] path to legacy configuration directory")
       ("certs-dir,S", po::value< std::string >(), "path to certs directory")
       ("quiet", "disable startup and info messages")
@@ -56,9 +55,9 @@ std::shared_ptr<cli::App> newApp(std::string& appName) {
     app->version = "0.1";
     app->usage = "High Performance Object Storage";
     app->description = "Build high performance data infrastructure for machine learning, analytics and application data workloads with CppIO";
-    app->options = &globalOptions;
+    app->flags = { .optionsDescription = globalOptions },
     app->hideHelpCommand = true;
-    app->commands.push_back(serverCmd);
+    app->commands.push_back(&serverCmd);
     app->customAppHelpTemplate = cppioHelpTemplate;
     return app;
 }
