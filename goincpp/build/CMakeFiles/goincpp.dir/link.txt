@@ -1,1 +1,0 @@
-/usr/local/bin/c++ -g CMakeFiles/goincpp.dir/src/runtime/chan_test.cpp.o -o goincpp 

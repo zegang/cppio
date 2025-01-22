@@ -1,3 +1,0 @@
-/goincpp/build/CMakeFiles/goincpp.dir
-/goincpp/build/CMakeFiles/edit_cache.dir
-/goincpp/build/CMakeFiles/rebuild_cache.dir
