@@ -4,6 +4,6 @@
 [submodule "deps/spdlog"]
 	path = deps/spdlog
 	url = https://github.com/gabime/spdlog.git
-[submodule "goincpp"]
-	path = goincpp
+[submodule "deps/goincpp"]
+	path = deps/goincpp
 	url = git@github.com:zegang/goincpp.git

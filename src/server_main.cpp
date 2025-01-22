@@ -89,22 +89,20 @@ Error serverMain(cli::Context* ctx) {
         gLogger->info("Your input for --config={}", serverCmd.flags["config"].as< std::string >());
     }
 
-    std::cout << "Positional arguments:";
     for (const auto& arg : serverCmd.flags.args()) {
         std::cout << " " << arg;
     }
-    std::cout << std::endl;
 
-    std::cout << "Positional arguments:";
-    for (const auto& arg : serverCmd.flags.args()) {
-        std::cout << " " << arg;
-    }
-    std::cout << std::endl;
-    
     // HttpServer httpServer;
     // httpServer.start();
 
     buildServerCtxt(ctx, &globalServerCtxt);
+
+    if (globalServerCtxt.layout.pools.empty()) {
+        std::cout << "Pls. provide storage pools" << std::endl;
+        return err;
+    }
+
     serverHandleCmdArgs(&globalServerCtxt);
     // newObject, err = newObjectLayer(GlobalContext, globalEndpoints)
     // newObject = newErasureServerPools(ctx, endpointServerPools)

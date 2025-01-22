@@ -17,7 +17,7 @@ cli::Command helpCommand{
         //     return showCommandHelp(ctx, args.first());
         // }
         // showAppHelp(ctx);
-        std::cout << "helpCmdOpts" << std::endl;
+        std::cout << helpCommand.usage << std::endl;
         return nullptr;
     },
 };

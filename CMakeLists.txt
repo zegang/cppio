@@ -8,7 +8,7 @@ set(CMAKE_BUILD_TYPE Debug)
 message("Build root directory: ${CMAKE_BINARY_DIR}")
 
 # Specify the compiler
-set(CMAKE_CXX_COMPILER "/usr/local/gcc-14/bin/c++")
+# set(CMAKE_CXX_COMPILER "/usr/local/gcc-14/bin/c++")
 # # Static build requires setting appropriate flags
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static")
 # # Set static linking for all libraries (optional)
@@ -23,12 +23,12 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -gdwarf-2")
 # Optionally, set release-specific flags
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 # Specify the path to libstdc++.so
-set(CMAKE_CXX_STANDARD_LIBRARIES "/usr/local/gcc-14/lib64/libstdc++.so")
+# set(CMAKE_CXX_STANDARD_LIBRARIES "/usr/local/gcc-14/lib64/libstdc++.so")
 # Specify custom library search paths
-link_directories(
-    /usr/local/gcc-14/lib64
-    /usr/local/gcc-14/lib
-)
+# link_directories(
+#     /usr/local/gcc-14/lib64
+#     /usr/local/gcc-14/lib
+# )
 # Specify linker flags to link against specific system libraries
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lm -lgcc_s -lc -lrt -lpthread")
 

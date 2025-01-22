@@ -1,4 +1,7 @@
 #!/bin/bash
+echo "-------------------------------------"
+echo "To run cppio bootstrap.sh"
+echo "-------------------------------------"
 
 ROOT_DIR=`pwd`
 CXXSTD="c++20"
@@ -10,6 +13,9 @@ CXX_STANDARD_LIBRARIES="/usr/local/gcc-14/lib64/libstdc++.so"
 LD_LIBRARY_PATH=/usr/local/gcc-14/lib64:/usr/local/gcc-14/lib:$LD_LIBRARY_PATH
 
 PATH=/usr/local/gcc-14/bin:/usr/local/gcc-14/lib64:/usr/local/gcc-14/lib:$PATH
+
+
+echo -e "ROOT_DIR ${ROOT_DIR}\n"
 
 ############# Boost ##############
 cd ${ROOT_DIR}
@@ -30,6 +36,13 @@ cd ${ROOT_DIR}
 SPDLOG_ROOT="${ROOT_DIR}/deps/spdlog"
 cd ${SPDLOG_ROOT}
 mkdir build
-cmake3 -S . -B build -DCMAKE_INSTALL_PREFIX="${ROOT_DIR}/build/deps/spdlog"
+cmake -S . -B build -DCMAKE_INSTALL_PREFIX="${ROOT_DIR}/build/deps/spdlog"
 cd build
 make install
+
+############# Back to Root DIR ##############
+cd ${ROOT_DIR}
+
+echo "-------------------------------------"
+echo "Finish cppio bootstrap.sh"
+echo "-------------------------------------"
