@@ -2,6 +2,7 @@
 
 #include "hsd.h"
 #include "service/grpcserver.h"
+#include "service/prometheus_metrics.h"
 
 namespace CPPIO_NAMESPACE {
 
@@ -32,6 +33,21 @@ Error HSD::Start(int argc, char* argv[]) {
     VolumeContext volume_context(argv[2]);
     GlobalServerContext::getInstance()->set_volume_context(volume_context);
 
+    int metrics_port = 9399;
+    const char* metrics_port_env = std::getenv("CPPIO_METRICS_PORT");
+    if (metrics_port_env) {
+        try {
+            metrics_port = std::stoi(metrics_port_env);
+        } catch (...) {
+            metrics_port = 9399;
+        }
+    }
+
+    metrics_server_ = std::make_unique<MetricsHttpServer>(
+        metrics_port,
+        []() { return PrometheusMetrics::Instance().Exposition(); });
+    metrics_server_->Start();
+
     auto grpc_server = std::make_shared<GrpcServer>();
     grpc_server->Run();
     setState(HSDState::HSDSTATE_STARTTED);
@@ -44,6 +60,9 @@ Error HSD::Start(int argc, char* argv[]) {
     setState(HSDState::HSDSTATE_SHUTDOWNING);
     for (auto& subsys : components_) {
         subsys->Shutdown();
+    }
+    if (metrics_server_) {
+        metrics_server_->Stop();
     }
     setState(HSDState::HSDSTATE_SHUTDOWNDONE);
 

@@ -18,9 +18,12 @@
 #include <vector>
 #include <memory>
 #include <atomic>
+#include <mutex>
+#include <condition_variable>
 
 #include "error.h"
 #include "component.h"
+#include "service/metrics_http_server.h"
 
 namespace CPPIO_NAMESPACE {
 
@@ -44,6 +47,7 @@ private:
     std::atomic<bool> stop_required_;
     std::mutex mtx_;
     std::condition_variable cv_;
+    std::unique_ptr<MetricsHttpServer> metrics_server_;
 
 private:
     Error setState(HSDState state);

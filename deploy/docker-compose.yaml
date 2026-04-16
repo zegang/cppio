@@ -8,6 +8,30 @@ services:
     command: ["/cppio/bin/hsd", "myhsd", "/cppio/config/mirrortwolocalmps.json"]
     ports:
       - "9999:9999"
+      - "9399:9399"
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: cppio-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - cppio-hsd
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: cppio-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      - prometheus
     restart: unless-stopped
 
   cppio-cli:
