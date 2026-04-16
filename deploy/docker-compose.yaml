@@ -1,14 +1,30 @@
 services:
   cppio-hsd:
-    image: localhost/cppio_rel:latest
+    image: localhost/cppio-rel:latest
     container_name: cppio-hsd
     build:
       context: ..
       dockerfile: deploy/SuseContainerImageFile
-    command: ["/cppio/bin/hsd", "myhsd", "/cppio/config/mirrortwolocalmps.json"]
+    command: ["/cppio/bin/hsd", "myhsd", "/cppio/config/localcache4s3obs.json"]
     ports:
       - "9999:9999"
       - "9399:9399"
+    depends_on:
+      - minio
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    container_name: cppio-minio
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    volumes:
+      - ./minio/data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: ["server", "/data", "--console-address", ":9001"]
     restart: unless-stopped
 
   prometheus:
@@ -27,15 +43,18 @@ services:
     container_name: cppio-grafana
     ports:
       - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
     depends_on:
       - prometheus
     restart: unless-stopped
 
   cppio-cli:
-    image: localhost/cppio_rel:latest
+    image: localhost/cppio-rel:latest
     container_name: cppio-cli
     build:
       context: ..

@@ -18,7 +18,7 @@
     {
       "name": "MinioOBS",
       "type": "VOLUMETYPE_LEAFVOLUME",
-      "url": "http://192.168.1.3:9000",
+      "url": "http://cppio-minio:9000",
       "weight": 0,
       "storage_api_type": "STORAGEAPITYPE_CLOUD_OBS",
       "state": "VOLUMESTATE_UNSPECIFIED",

@@ -111,7 +111,12 @@ Error ServerMain(std::shared_ptr<cli::Context> ctx) {
     IODescript io_i, io_o;
     io_i.set_path_or_key(path);
     auto status = stub->Read(&client_context, io_i, &io_o);
-
+    if (status.ok()) {
+      CPPIOLOG::info("Read successful for path: {}", path);
+    } else {
+      CPPIOLOG::error("Read failed for path: {} - Code: {}, Message: {}", 
+               path, status.error_code(), status.error_message());
+    }
     return err;
 }
 

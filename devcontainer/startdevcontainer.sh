@@ -6,6 +6,7 @@ DOCKERFILE_PATH=$(dirname -- "$(realpath "$0")")
 echo "The absolute current directory (using realpath) is: $DOCKERFILE_PATH"
 # ---------------------
 
+ENGINE="docker"
 DO_BUILD=false
 DO_START=false
 RM_CONTAINER=false
@@ -72,8 +73,7 @@ proxy_check_set() {
 # Function to build with Docker
 build_with_docker() {
     echo "Attempting to build with Docker..."
-    echo "Command: docker build --network=host -t $IMAGE_NAME -f $DOCKERFILE_PATH/Dockerfile-$(uname -m) $DOCKERFILE_PATH"
-    # docker build --network=host -t "$IMAGE_NAME" -f $DOCKERFILE_PATH/Dockerfile-$(uname -m) $DOCKERFILE_PATH
+    echo "Command: docker build -t $IMAGE_NAME -f $DOCKERFILE_PATH/Dockerfile-$(uname -m) $DOCKERFILE_PATH"
     docker build -t "$IMAGE_NAME" -f $DOCKERFILE_PATH/Dockerfile-$(uname -m) $DOCKERFILE_PATH
     if [ $? -eq 0 ]; then
         echo "Docker build successful!"
@@ -99,68 +99,76 @@ build_with_podman() {
 }
 
 build_image() {
-    if command -v docker &> /dev/null; then
-        build_with_docker
-        if [ $? -ne 0 ]; then
-            echo "Docker build failed. Trying Podman..."
-            # If Docker build failed, try Podman
-            if command -v podman &> /dev/null; then
-                build_with_podman
-            else
-                echo "Podman not found. Please install Docker or Podman to build the image."
-                exit 1
-            fi
+    if [ "$ENGINE" = "docker" ]; then
+        if ! command -v docker &> /dev/null; then
+            echo "Docker not found. Please install Docker."
+            exit 1
         fi
-    elif command -v podman &> /dev/null; then
+        build_with_docker
+    elif [ "$ENGINE" = "podman" ]; then
+        if ! command -v podman &> /dev/null; then
+            echo "Podman not found. Please install Podman."
+            exit 1
+        fi
         build_with_podman
     else
-        echo "Docker and Podman not found. Please install either Docker or Podman to build the image."
+        echo "Invalid engine: $ENGINE. Please specify 'docker' or 'podman'."
         exit 1
     fi
 }
 
 start_container() {
     local ct_run_parm="--network=host -v ${DOCKERFILE_PATH}/..:/workspace/cppio -it --name ${IMAGE_NAME} ${IMAGE_NAME}:latest"
-    if command -v docker &> /dev/null; then
+    if [ "$ENGINE" = "docker" ]; then
         echo "Start container ${IMAGE_NAME} by Docker"
         echo "Command: docker run --privileged ${ct_run_parm}"
         docker run --privileged ${ct_run_parm}
-    else
+    elif [ "$ENGINE" = "podman" ]; then
         echo "Start container ${IMAGE_NAME} by Podman"
         echo "Command: podman run ${ct_run_parm}"
         podman run ${ct_run_parm}
+    else
+        echo "Invalid engine: $ENGINE. Please specify 'docker' or 'podman'."
+        exit 1
     fi
 }
 
 remove_container() {
-    if command -v docker &> /dev/null; then
+    if [ "$ENGINE" = "docker" ]; then
         echo "Remove container ${IMAGE_NAME} by Docker"
         echo "Command: docker rm ${IMAGE_NAME} --force"
         docker rm ${IMAGE_NAME} --force
-    else
+    elif [ "$ENGINE" = "podman" ]; then
         echo "Remove container ${IMAGE_NAME} by Podman"
         echo "Command: podman rm ${IMAGE_NAME} --force"
         podman rm ${IMAGE_NAME} --force
+    else
+        echo "Invalid engine: $ENGINE. Please specify 'docker' or 'podman'."
+        exit 1
     fi
 }
 
 # Function to check if an image exists
 image_exists() {
     local image_name="$1"
-    if command -v docker &> /dev/null; then
+    if [ "$ENGINE" = "docker" ]; then
         docker image inspect "$image_name:latest" > /dev/null 2>&1
         return $?
-    elif command -v podman &> /dev/null; then
+    elif [ "$ENGINE" = "podman" ]; then
         podman image inspect "$image_name:latest" > /dev/null 2>&1
         return $?
     else
-        echo "Neither Docker nor Podman is installed."
+        echo "Invalid engine: $ENGINE. Please specify 'docker' or 'podman'."
         return 1
     fi
 }
 
 while (( "$#" )); do
   case "$1" in
+    -e|--engine)
+      ENGINE="$2"
+      shift 2
+      ;;
     -b|--build)
       DO_BUILD=true
       shift
@@ -182,7 +190,8 @@ while (( "$#" )); do
       shift
       ;;
     -h|--help)
-      echo "Usage: $(basename "$0") [-b|--build] [-s|--start] [-r|--remove] [-l|--list] [-h|--help]"
+      echo "Usage: $(basename "$0") [-e|--engine ENGINE] [-b|--build] [-s|--start] [-r|--remove] [-l|--list] [-p|--proxy] [-h|--help]"
+      echo "  -e, --engine    Specify container engine: docker or podman (default: docker)."
       echo "  -b, --build     Build the container image."
       echo "  -s, --start     Start the container."
       echo "  -r, --remove    Remove the container."

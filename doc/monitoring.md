@@ -1,14 +1,15 @@
 # CppIO Monitoring with Prometheus and Grafana
 
-This repository now exposes Prometheus-compatible metrics for CppIO I/O operations and includes a Docker Compose deployment example for Prometheus and Grafana.
+This repository exposes Prometheus-compatible metrics for CppIO I/O operations and includes automated Docker Compose deployment with Prometheus and Grafana.
 
 ## What is included
 
 - A new `/metrics` HTTP endpoint listening on port `9399` by default.
 - Prometheus counters for read/write operations, total bytes, and total processing time.
-- A simple Grafana dashboard definition for CppIO I/O metrics.
+- Automatic Grafana dashboard provisioning (no manual import required).
+- Grafana datasource auto-provisioning for Prometheus.
 - A `deploy/prometheus.yml` scrape configuration.
-- Docker Compose entries for `prometheus` and `grafana`.
+- Docker Compose services for `prometheus` and `grafana`.
 
 ## Metrics exposed
 
@@ -38,11 +39,28 @@ Grafana default login:
 - user: `admin`
 - password: `admin`
 
-## Grafana dashboard
+## Automatic Provisioning
 
-Import `deploy/grafana-dashboard-cppio.json` into Grafana to visualize read/write counts and throughput.
+The CppIO I/O Metrics Dashboard is automatically provisioned when Grafana starts. No manual import is required.
+
+Dashboard location:
+- `deploy/grafana/provisioning/dashboards/cppio-io-metrics.json`
+
+Datasource configuration:
+- `deploy/grafana/provisioning/datasources/prometheus-datasource.yaml`
+
+Dashboard provider config:
+- `deploy/grafana/provisioning/dashboards/dashboard-provider.yaml`
+
+The dashboard displays:
+1. **Total Read/Write Operations** - cumulative operation count over time
+2. **I/O Throughput** - bytes per second (5-minute average)
+3. **Total Processing Time** - cumulative time spent in I/O operations
+4. **Total Bytes Transferred** - cumulative bytes read/written
 
 ## Customization
 
 - Change the metrics port with `CPPIO_METRICS_PORT`.
 - Prometheus will scrape the HSD service at `cppio-hsd:9399`.
+- Modify dashboard in `deploy/grafana/provisioning/dashboards/cppio-io-metrics.json` to customize visualizations.
+- Modify datasource in `deploy/grafana/provisioning/datasources/prometheus-datasource.yaml` to change Prometheus connection details.

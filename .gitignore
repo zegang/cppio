@@ -3,3 +3,4 @@ build
 *.grpc.pb.*
 *.pb.*
 deploy/helm/packages
+deploy/minio

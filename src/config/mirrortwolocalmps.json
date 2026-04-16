@@ -4,8 +4,7 @@
   "stripe_type": "VOLUMESTRIPETYPE_RAID1",
   "storage_api_type": "STORAGEAPITYPE_FS",
   "url": "/mnt/cppio/mirror2localmps",
-  "sub_volumes": [],
-  "storage_endpoints": [
+  "sub_volumes": [
     {
       "name": "MountPoint1",
       "type": "VOLUMETYPE_LEAFVOLUME",

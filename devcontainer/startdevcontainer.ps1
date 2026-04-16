@@ -1,7 +1,8 @@
-# PowerShell script to build, start, and remove the cppio_dev container
+# PowerShell script to build, start, and remove the cppio-dev container
 # Equivalent to startdevcontainer.sh
 
 param(
+    [Alias('e')][string]$Engine = 'docker',
     [Alias('b')][switch]$Build,
     [Alias('s')][switch]$Start,
     [Alias('r')][switch]$Remove,
@@ -95,7 +96,7 @@ function Set-Or-Remove-Proxy {
 }
 
 # --- Configuration ---
-$IMAGE_NAME = "cppio_dev"
+$IMAGE_NAME = "cppio-dev"
 $DOCKERFILE_PATH = Split-Path -Parent (Resolve-Path $MyInvocation.MyCommand.Path)
 Write-Host "The absolute current directory (using Resolve-Path) is: $DOCKERFILE_PATH"
 # ---------------------
@@ -131,58 +132,58 @@ function Build-With-Podman {
 }
 
 function Build-Image {
-    if (Get-Command docker -ErrorAction SilentlyContinue) {
-        if (-not (Build-With-Docker)) {
-            Write-Host "Docker build failed. Trying Podman..."
-            if (Get-Command podman -ErrorAction SilentlyContinue) {
-                if (-not (Build-With-Podman)) {
-                    Write-Host "Podman build failed. Exiting."
-                    exit 1
-                }
-            } else {
-                Write-Host "Podman not found. Please install Docker or Podman to build the image."
-                exit 1
-            }
+    if ($Engine -eq 'docker') {
+        if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+            Write-Host "Docker not found. Please install Docker."
+            exit 1
         }
-    } elseif (Get-Command podman -ErrorAction SilentlyContinue) {
+        if (-not (Build-With-Docker)) {
+            Write-Host "Docker build failed. Exiting."
+            exit 1
+        }
+    } elseif ($Engine -eq 'podman') {
+        if (-not (Get-Command podman -ErrorAction SilentlyContinue)) {
+            Write-Host "Podman not found. Please install Podman."
+            exit 1
+        }
         if (-not (Build-With-Podman)) {
             Write-Host "Podman build failed. Exiting."
             exit 1
         }
     } else {
-        Write-Host "Docker and Podman not found. Please install either Docker or Podman to build the image."
+        Write-Host "Invalid engine: $Engine. Please specify 'docker' or 'podman'."
         exit 1
     }
 }
 
 function Start-Container {
     $ct_run_parm = "--network=host -v $($DOCKERFILE_PATH)/..:/workspace/cppio -it --name $IMAGE_NAME ${IMAGE_NAME}:latest"
-    if (Get-Command docker -ErrorAction SilentlyContinue) {
+    if ($Engine -eq 'docker') {
         $docker_run_cmd = "docker run --privileged $ct_run_parm"
         Write-Host "Start container $IMAGE_NAME by Docker"
         Write-Host "Command: $docker_run_cmd"
         Invoke-Expression $docker_run_cmd
-    } elseif (Get-Command podman -ErrorAction SilentlyContinue) {
+    } elseif ($Engine -eq 'podman') {
         Write-Host "Start container $IMAGE_NAME by Podman"
         Write-Host "Command: podman run $ct_run_parm"
         Invoke-Expression "podman run $ct_run_parm"
     } else {
-        Write-Host "Neither Docker nor Podman found."
+        Write-Host "Invalid engine: $Engine. Please specify 'docker' or 'podman'."
         exit 1
     }
 }
 
 function Remove-Container {
-    if (Get-Command docker -ErrorAction SilentlyContinue) {
+    if ($Engine -eq 'docker') {
         Write-Host "Remove container $IMAGE_NAME by Docker"
         Write-Host "Command: docker rm $IMAGE_NAME --force"
         Invoke-Expression "docker rm $IMAGE_NAME --force"
-    } elseif (Get-Command podman -ErrorAction SilentlyContinue) {
+    } elseif ($Engine -eq 'podman') {
         Write-Host "Remove container $IMAGE_NAME by Podman"
         Write-Host "Command: podman rm $IMAGE_NAME --force"
         Invoke-Expression "podman rm $IMAGE_NAME --force"
     } else {
-        Write-Host "Neither Docker nor Podman found."
+        Write-Host "Invalid engine: $Engine. Please specify 'docker' or 'podman'."
         exit 1
     }
 }
@@ -200,7 +201,8 @@ if ($Proxy) {
 }
 
 if ($Help) {
-    Write-Host "Usage: .\\startdevcontainer.ps1 [-Build] [-Start] [-Remove] [-Proxy] [-SetExecutionPolicy] [-ListContainers] [-Help]"
+    Write-Host "Usage: .\\startdevcontainer.ps1 [-Engine {docker|podman}] [-Build] [-Start] [-Remove] [-Proxy] [-SetExecutionPolicy] [-ListContainers] [-Help]"
+    Write-Host "  -Engine (-e): Specify container engine: docker or podman (default: docker)."
     Write-Host "  -Build (-b): Build the container image."
     Write-Host "  -Start (-s): Start the container."
     Write-Host "  -Remove (-r): Remove the container."
