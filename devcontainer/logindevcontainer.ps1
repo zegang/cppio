@@ -1,3 +1,4 @@
+# Copyright 2026 cppio authors. All rights reserved.
 # PowerShell script to log into the cppio_dev container (Docker or Podman)
 
 param(
@@ -13,7 +14,8 @@ if ($Help) {
 }
 
 # --- Configuration ---
-$IMAGE_NAME = "cppio_dev"
+$CPPIO_PROJECT_NAME = "cppio"
+$IMAGE_NAME = "${CPPIO_PROJECT_NAME}/cppio-dev"
 $DOCKERFILE_PATH = Split-Path -Parent (Resolve-Path $MyInvocation.MyCommand.Path)
 Write-Host "The absolute current directory (using Resolve-Path) is: $DOCKERFILE_PATH"
 # ---------------------

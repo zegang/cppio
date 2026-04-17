@@ -1,11 +1,12 @@
 #!/bin/bash
 
 # --- Configuration ---
-IMAGE_NAME="cppio_dev"
 DOCKERFILE_PATH=$(dirname -- "$(realpath "$0")")
 echo "The absolute current directory (using realpath) is: $DOCKERFILE_PATH"
 # ---------------------
 
+CPPIO_PROJECT_NAME="cppio"
+IMAGE_NAME="${CPPIO_PROJECT_NAME}/cppio-dev"
 ENGINE="docker"
 DO_BUILD=false
 DO_START=false
@@ -165,6 +166,10 @@ image_exists() {
 
 while (( "$#" )); do
   case "$1" in
+    -n|--name)
+      IMAGE_NAME="$2"
+      shift 2
+      ;;
     -e|--engine)
       ENGINE="$2"
       shift 2
@@ -191,6 +196,8 @@ while (( "$#" )); do
       ;;
     -h|--help)
       echo "Usage: $(basename "$0") [-e|--engine ENGINE] [-b|--build] [-s|--start] [-r|--remove] [-l|--list] [-p|--proxy] [-h|--help]"
+      echo "This tool is to do ops on container images for CPPIO dev."
+      echo "  -n, --name      Specify the dev image name."
       echo "  -e, --engine    Specify container engine: docker or podman (default: docker)."
       echo "  -b, --build     Build the container image."
       echo "  -s, --start     Start the container."

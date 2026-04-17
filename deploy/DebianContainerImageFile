@@ -1,13 +1,14 @@
 # Copyright 2026 cppio authors. All rights reserved.
-FROM opensuse/leap:latest
+FROM debian:latest
 
 LABEL maintainer="Zegang.luo@qq.com"
 LABEL version="0.0.1"
 LABEL description="cppio release container image"
 
-RUN zypper refresh && \
-  zypper install -y openssl curl && \
-  zypper clean
+RUN apt update && \
+  apt install -y openssl curl && \
+  rm -rf /var/lib/apt/lists/* && \
+  apt clean
 
 COPY build/cppio/cppio_install_root/bin /cppio/bin
 COPY build/cppio/cppio_install_root/lib /cppio/lib

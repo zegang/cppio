@@ -1,7 +1,9 @@
 #!/bin/bash
+# Copyright 2026 cppio authors. All rights reserved.
 
 # --- Configuration ---
-IMAGE_NAME="cppio-dev"
+CPPIO_PROJECT_NAME="cppio"
+IMAGE_NAME="${CPPIO_PROJECT_NAME}/cppio-dev"
 DOCKERFILE_PATH=$(dirname -- "$(realpath "$0")")
 echo "The absolute current directory (using realpath) is: $DOCKERFILE_PATH"
 ENGINE="docker"

@@ -1,7 +1,11 @@
+# Copyright 2026 cppio authors. All rights reserved.
 # PowerShell script to build, start, and remove the cppio-dev container
 # Equivalent to startdevcontainer.sh
 
+$CPPIO_PROJECT_NAME = "cppio"
+
 param(
+    [Alias('n')][string]$ImageName = "${CPPIO_PROJECT_NAME}/cppio-dev",
     [Alias('e')][string]$Engine = 'docker',
     [Alias('b')][switch]$Build,
     [Alias('s')][switch]$Start,
@@ -96,7 +100,7 @@ function Set-Or-Remove-Proxy {
 }
 
 # --- Configuration ---
-$IMAGE_NAME = "cppio-dev"
+$ImageName = "cppio-dev"
 $DOCKERFILE_PATH = Split-Path -Parent (Resolve-Path $MyInvocation.MyCommand.Path)
 Write-Host "The absolute current directory (using Resolve-Path) is: $DOCKERFILE_PATH"
 # ---------------------
@@ -104,7 +108,7 @@ Write-Host "The absolute current directory (using Resolve-Path) is: $DOCKERFILE_
 function Build-With-Docker {
     Write-Host "Attempting to build with Docker..."
     $dockerfile = "Dockerfile-$(Get-ComputerInfo -Property OsArchitecture | ForEach-Object { if ($_ -like '*64*') { 'x86_64' } else { 'arm64' } })"
-    $cmd = "docker build -t $IMAGE_NAME -f $DOCKERFILE_PATH/$dockerfile $DOCKERFILE_PATH"
+    $cmd = "docker build -t $ImageName -f $DOCKERFILE_PATH/$dockerfile $DOCKERFILE_PATH"
     Write-Host "Command: $cmd"
     Invoke-Expression $cmd
     if ($LASTEXITCODE -eq 0) {
@@ -119,7 +123,7 @@ function Build-With-Docker {
 function Build-With-Podman {
     Write-Host "Attempting to build with Podman..."
     $dockerfile = "Dockerfile-$(Get-ComputerInfo -Property OsArchitecture | ForEach-Object { if ($_ -like '*64*') { 'x86_64' } else { 'arm64' } })"
-    $cmd = "podman build --network=host -t $IMAGE_NAME -f $DOCKERFILE_PATH/$dockerfile $DOCKERFILE_PATH"
+    $cmd = "podman build --network=host -t $ImageName -f $DOCKERFILE_PATH/$dockerfile $DOCKERFILE_PATH"
     Write-Host "Command: $cmd"
     Invoke-Expression $cmd
     if ($LASTEXITCODE -eq 0) {
@@ -157,14 +161,14 @@ function Build-Image {
 }
 
 function Start-Container {
-    $ct_run_parm = "--network=host -v $($DOCKERFILE_PATH)/..:/workspace/cppio -it --name $IMAGE_NAME ${IMAGE_NAME}:latest"
+    $ct_run_parm = "--network=host -v $($DOCKERFILE_PATH)/..:/workspace/cppio -it --name $ImageName ${ImageName}:latest"
     if ($Engine -eq 'docker') {
         $docker_run_cmd = "docker run --privileged $ct_run_parm"
-        Write-Host "Start container $IMAGE_NAME by Docker"
+        Write-Host "Start container $ImageName by Docker"
         Write-Host "Command: $docker_run_cmd"
         Invoke-Expression $docker_run_cmd
     } elseif ($Engine -eq 'podman') {
-        Write-Host "Start container $IMAGE_NAME by Podman"
+        Write-Host "Start container $ImageName by Podman"
         Write-Host "Command: podman run $ct_run_parm"
         Invoke-Expression "podman run $ct_run_parm"
     } else {
@@ -175,17 +179,31 @@ function Start-Container {
 
 function Remove-Container {
     if ($Engine -eq 'docker') {
-        Write-Host "Remove container $IMAGE_NAME by Docker"
-        Write-Host "Command: docker rm $IMAGE_NAME --force"
-        Invoke-Expression "docker rm $IMAGE_NAME --force"
+        Write-Host "Remove container $ImageName by Docker"
+        Write-Host "Command: docker rm $ImageName --force"
+        Invoke-Expression "docker rm $ImageName --force"
     } elseif ($Engine -eq 'podman') {
-        Write-Host "Remove container $IMAGE_NAME by Podman"
-        Write-Host "Command: podman rm $IMAGE_NAME --force"
-        Invoke-Expression "podman rm $IMAGE_NAME --force"
+        Write-Host "Remove container $ImageName by Podman"
+        Write-Host "Command: podman rm $ImageName --force"
+        Invoke-Expression "podman rm $ImageName --force"
     } else {
         Write-Host "Invalid engine: $Engine. Please specify 'docker' or 'podman'."
         exit 1
     }
+}
+
+if ($Help) {
+    Write-Host "Usage: .\\startdevcontainer.ps1 [-ImageName {cppio-dev}] [-Engine {docker|podman}] [-Build] [-Start] [-Remove] [-Proxy] [-SetExecutionPolicy] [-ListContainers] [-Help]"
+    Write-Host "  -ImageName (-n): Specify container image name for CPPIO dev (default: cppio-dev)."
+    Write-Host "  -Engine (-e): Specify container engine: docker or podman (default: docker)."
+    Write-Host "  -Build (-b): Build the container image."
+    Write-Host "  -Start (-s): Start the container."
+    Write-Host "  -Remove (-r): Remove the container."
+    Write-Host "  -Proxy (-p): Set or remove HTTP/HTTPS proxy for this session."
+    Write-Host "  -SetExecutionPolicy (-ep): Interactively set PowerShell execution policy for CurrentUser (RemoteSigned, Bypass, Unrestricted, Restricted)."
+    Write-Host "  -ListContainers (-l): List all containers (Docker or Podman)."
+    Write-Host "  -Help (-h): Show this help message."
+    exit 0
 }
 
 if ($SetExecutionPolicy) {
@@ -198,19 +216,6 @@ if ($ListContainers) {
 
 if ($Proxy) {
     Set-Or-Remove-Proxy
-}
-
-if ($Help) {
-    Write-Host "Usage: .\\startdevcontainer.ps1 [-Engine {docker|podman}] [-Build] [-Start] [-Remove] [-Proxy] [-SetExecutionPolicy] [-ListContainers] [-Help]"
-    Write-Host "  -Engine (-e): Specify container engine: docker or podman (default: docker)."
-    Write-Host "  -Build (-b): Build the container image."
-    Write-Host "  -Start (-s): Start the container."
-    Write-Host "  -Remove (-r): Remove the container."
-    Write-Host "  -Proxy (-p): Set or remove HTTP/HTTPS proxy for this session."
-    Write-Host "  -SetExecutionPolicy (-ep): Interactively set PowerShell execution policy for CurrentUser (RemoteSigned, Bypass, Unrestricted, Restricted)."
-    Write-Host "  -ListContainers (-l): List all containers (Docker or Podman)."
-    Write-Host "  -Help (-h): Show this help message."
-    exit 0
 }
 
 if ($Build) {

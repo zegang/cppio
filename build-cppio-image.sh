@@ -4,10 +4,12 @@
 # This script builds the project in the dev container, then runs docker-compose build
 
 # --- Configuration ---
-DEV_IMAGE_NAME="cppio-dev"
-IMAGE_NAME="cppio-rel"
+CPPIO_PROJECT_NAME="cppio"
+DEV_IMAGE_NAME="${CPPIO_PROJECT_NAME}/cppio-dev"
+IMAGE_NAME="${CPPIO_PROJECT_NAME}/cppio-rel"
 BUILD_CONTAINER_NAME="cppio_dev_build_temp"
 ENGINE="docker"
+STEP="2"
 
 CPPIO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CPPIO_DEPLOY_ROOT="${CPPIO_ROOT}/deploy"
@@ -24,8 +26,11 @@ show_help() {
     echo "3. Runs docker-compose build cppio-hsd"
     echo ""
     echo "OPTIONS:"
-    echo "  -e, --engine ENGINE    Specify container engine: docker or podman (default: docker)."
-    echo "  -h, --help             Show this help message"
+    echo "  -d, --dev-image     NAME    Specify container image name for CPPIO dev."
+    echo "  -n, --image-name    NAME    Specify container image name for CPPIO."
+    echo "  -s, --step          1/2     1 for dev image build, 2 for all."
+    echo "  -e, --engine        ENGINE  Specify container engine: docker or podman (default: docker)."
+    echo "  -h, --help                  Show this help message"
 }
 
 # Function to check if image exists
@@ -70,7 +75,7 @@ build_cppio_dev_image() {
         return 1
     fi
     
-    bash "${start_dev_script}" -e "${ENGINE}" -b
+    bash "${start_dev_script}" -n "${DEV_IMAGE_NAME}" -e "${ENGINE}" -b
     if [ $? -eq 0 ]; then
         echo "Dev image built successfully!"
         return 0
@@ -128,8 +133,20 @@ run_compose_build() {
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
+        -d|--dev-image)
+            DEV_IMAGE_NAME="$2"
+            shift 2
+            ;;
+        -n|--image-name)
+            IMAGE_NAME="$2"
+            shift 2
+            ;;
         -e|--engine)
             ENGINE="$2"
+            shift 2
+            ;;
+        -s|--step)
+            STEP=$2
             shift 2
             ;;
         -h|--help)
@@ -155,6 +172,10 @@ if ! image_exists "${DEV_IMAGE_NAME}"; then
         echo "Failed to build image ${DEV_IMAGE_NAME}. Exiting."
         exit 1
     fi
+fi
+
+if [ $STEP -eq 1 ]; then
+    exit 0
 fi
 
 # Do CPPIO build in dev container

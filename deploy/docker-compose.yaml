@@ -1,10 +1,10 @@
 services:
   cppio-hsd:
-    image: localhost/cppio-rel:latest
+    image: cppio/cppio-rel:latest
     container_name: cppio-hsd
     build:
       context: ..
-      dockerfile: deploy/SuseContainerImageFile
+      dockerfile: deploy/DebianContainerImageFile
     command: ["/cppio/bin/hsd", "myhsd", "/cppio/config/localcache4s3obs.json"]
     ports:
       - "9999:9999"
@@ -54,11 +54,11 @@ services:
     restart: unless-stopped
 
   cppio-cli:
-    image: localhost/cppio-rel:latest
+    image: cppio/cppio-rel:latest
     container_name: cppio-cli
     build:
       context: ..
-      dockerfile: deploy/SuseContainerImageFile
+      dockerfile: deploy/DebianContainerImageFile
     command: ["sleep", "infinity"]
     environment:
       - CPPIO_HSD_SVC_NAME=cppio-hsd
