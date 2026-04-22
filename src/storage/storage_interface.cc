@@ -13,7 +13,7 @@ std::unordered_map<std::string, std::shared_ptr<StorageApi>> StorageAPIs::storag
 Error StorageComponent::Start() {
     Error err = ERROR_OK;
 
-    CPPIOLOG::info("Starting StorageComponent {}", name());
+    LOG_INFO("Starting StorageComponent {}", name());
 
     StorageAPIs::RegisterStorageApi(StorageApiType_Name(STORAGEAPITYPE_FS),
                                     std::make_shared<FSStorageApi>());

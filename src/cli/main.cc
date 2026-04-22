@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
     }
 
     std::string app_name = std::filesystem::path(argv[0]).filename();
-    CPPIOLOG::info("CppIO app name: {}", app_name);
+    LOG_INFO("CppIO app name: {}", app_name);
 
     auto cppio_app = cli::NewApp(app_name);
     cppio_app->add_command(&CPPIO_NAMESPACE::kServerCmd);

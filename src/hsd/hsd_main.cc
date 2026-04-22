@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
 
     std::string hsd_name = argv[1];
     hsd = new HSD(hsd_name);
-    CPPIOLOG::info("CppIO HSD name: {}", hsd->name());
+    LOG_INFO("CppIO HSD name: {}", hsd->name());
 
     hsd->Start(argc, argv);
 

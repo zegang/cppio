@@ -36,7 +36,7 @@ Error FSStorageApi::ReadDir(VolumeContext& vol_ctx, IODescript& io) {
     size_t len = io.len();
     // std::vector<std::byte>& buff = io.buffer;
 
-    CPPIOLOG::info("FSStorageApi::ReadDir(), volume {}, root path {}, path {}",
+    LOG_INFO("FSStorageApi::ReadDir(), volume {}, root path {}, path {}",
                    vol_ctx.volume()->name(), vol_ctx.root_path(), path);
 
     if (vol_ctx.volume()->type() == VOLUMETYPE_LEAFVOLUME) {
@@ -47,15 +47,15 @@ Error FSStorageApi::ReadDir(VolumeContext& vol_ctx, IODescript& io) {
         if (final_path == "/" ) {
             final_path = root_dir;
         }
-        CPPIOLOG::info("FSStorageApi::ReadDir(), volume {}, root path {}, final path {}",
+        LOG_INFO("FSStorageApi::ReadDir(), volume {}, root path {}, final path {}",
                         vol_ctx.volume()->name(), vol_ctx.root_path(), final_path.string());
         if (std::filesystem::exists(final_path)) {
             for (const auto& entry : std::filesystem::directory_iterator{final_path}) {
                 std::string filename = entry.path().filename();
-                CPPIOLOG::info("File: {}", filename);
+                LOG_INFO("File: {}", filename);
             }
         } else {
-            CPPIOLOG::info("Directory does not exist.");
+            LOG_INFO("Directory does not exist.");
             err = MAKE_ERROR(std::errc::no_such_file_or_directory, "Directory does not exist.");
         }
     } else {

@@ -38,7 +38,7 @@ Error VolumeRAID1Striper::ReadDir(VolumeContext& vol_ctx, IODescript& io) {
     auto cache = vol_ctx.sub_volume_contexts()[0];
     auto backend = vol_ctx.sub_volume_contexts()[1];
 
-    CPPIOLOG::info("VolumeRAID1Striper::ReadDir(), Cache Volume {}, Backend Volume {}",
+    LOG_INFO("VolumeRAID1Striper::ReadDir(), Cache Volume {}, Backend Volume {}",
                    cache->volume()->name(), backend->volume()->name());
     
     auto cache_api = StorageAPIs::GetStorageApi(cache);
@@ -47,7 +47,7 @@ Error VolumeRAID1Striper::ReadDir(VolumeContext& vol_ctx, IODescript& io) {
     }
 
     if (!cache_api || (err && err->code() == std::errc::no_such_file_or_directory)) {
-        CPPIOLOG::warn("VolumeRAID1Striper::ReadDir(), volume {}, path {} not found on cache volume {}",
+        LOG_WARN("VolumeRAID1Striper::ReadDir(), volume {}, path {} not found on cache volume {}",
                        vol_ctx.volume()->name(), path, cache->volume()->name());
         auto backend_api = StorageAPIs::GetStorageApi(backend);
         if (backend_api) {

@@ -22,7 +22,7 @@ Error HSD::Start(int argc, char* argv[]) {
     Error err = ERROR_OK;
     setState(HSDState::HSDSTATE_STARTREQ);
     setState(HSDState::HSDSTATE_STARTING);
-    CPPIOLOG::info("CppIO HSD {}: main thread starting", name());
+    LOG_INFO("CppIO HSD {}: main thread starting", name());
 
     RegisterComponent(std::make_unique<StorageComponent>("storage"));
 
@@ -98,7 +98,7 @@ Error HSD::RegisterComponent(std::unique_ptr<Component>&& component) {
 
 Error HSD::setState(HSDState state) {
     Error err = ERROR_OK;
-    CPPIOLOG::info("CppIO HSD {}: old state {}, new state {}",
+    LOG_INFO("CppIO HSD {}: old state {}, new state {}",
                    name(), EnumToString(state_.load()), EnumToString(state));
     state_.store(state);
     return err;

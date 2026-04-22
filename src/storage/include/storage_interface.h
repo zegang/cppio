@@ -54,7 +54,7 @@ public:
         if (storage_apis_.count(type)) {
             return storage_apis_[type];
         }
-        CPPIOLOG::warn("Unsupported Storage or Stipe Type {}", type);
+        LOG_WARN("Unsupported Storage or Stipe Type {}", type);
         return nullptr;
     }
 

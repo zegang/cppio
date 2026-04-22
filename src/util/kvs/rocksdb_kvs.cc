@@ -15,7 +15,7 @@ RocksDBKVS::~RocksDBKVS() {
 Error RocksDBKVS::Open() {
     Error err = ErrorOK;
     if (db_) {
-        CPPIOLOG::warn("kVS {} already opened", dbpath_);
+        LOG_WARN("kVS {} already opened", dbpath_);
         return err;
     }
 

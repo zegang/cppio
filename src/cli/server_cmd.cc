@@ -95,7 +95,7 @@ Error ServerMain(std::shared_ptr<cli::Context> ctx) {
     }
 
     if (kServerCmd.IsOptionSet("config")) {
-        CPPIOLOG::info("--config={}", kServerCmd["config"].as< std::string >());
+        LOG_INFO("--config={}", kServerCmd["config"].as< std::string >());
     }
 
     const char* svc_name_env = std::getenv("CPPIO_HSD_SVC_NAME");
@@ -103,7 +103,7 @@ Error ServerMain(std::shared_ptr<cli::Context> ctx) {
     std::string svc_name = svc_name_env ? svc_name_env : "cppio-hsd-pod";
     std::string svc_port = svc_port_env ? svc_port_env : "9999";
     std::string grpc_svr_target = svc_name + ":" + svc_port;
-    CPPIOLOG::info("CppIO HDS Service Address - {}", grpc_svr_target);
+    LOG_INFO("CppIO HDS Service Address - {}", grpc_svr_target);
     auto channel = grpc::CreateChannel(grpc_svr_target, grpc::InsecureChannelCredentials());
     auto stub = StorageService::NewStub(channel);
     grpc::ClientContext client_context;
@@ -112,10 +112,10 @@ Error ServerMain(std::shared_ptr<cli::Context> ctx) {
     io_i.set_path_or_key(path);
     auto status = stub->Read(&client_context, io_i, &io_o);
     if (status.ok()) {
-      CPPIOLOG::info("Read successful for path: {}", path);
+      LOG_INFO("Read successful for path: {}", path);
     } else {
-      CPPIOLOG::error("Read failed for path: {} - Code: {}, Message: {}", 
-               path, status.error_code(), status.error_message());
+      LOG_ERROR("Read failed for path: {} - Code: {}, Message: {}",
+        path, status.error_code(), status.error_message());
     }
     return err;
 }

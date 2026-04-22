@@ -3,6 +3,7 @@
 This storage system is to be a Hybrid data infrastructure for machine learning, analytics and application data workloads.
 
 It can combine most common various storage provides into one:
+- GPU Memory,
 - FS Mount Points,
 - Block Devices,
 - NBD,

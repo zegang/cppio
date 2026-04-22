@@ -56,19 +56,19 @@ Error OBSStorageApi::ListBucket(VolumeContext& vol_ctx, IODescript& io) {
     size_t len = io.len();
     // std::vector<std::byte>& buff = io.buffer();
 
-    CPPIOLOG::info("OBSStorageApi::ListBucket(), volume {}, root path {}, path {}",
+    LOG_INFO("OBSStorageApi::ListBucket(), volume {}, root path {}, path {}",
                     vol_ctx.volume()->name(), vol_ctx.root_path(), path);
 
     if (vol_ctx.volume()->type() == VOLUMETYPE_LEAFVOLUME) {
         auto outcome = getClient(vol_ctx)->ListBuckets();
         if (!outcome.IsSuccess()) {
             std::cerr << "Failed with error: " << outcome.GetError() << std::endl;
-            // CPPIOLOG::info("Failed with error: {}", outcome.GetError().GetMessage());
+            // LOG_INFO("Failed with error: {}", outcome.GetError().GetMessage());
             err = MAKE_ERROR(std::errc::no_such_file_or_directory, "OBS Not Supported Yet.");
         } else {
-            CPPIOLOG::info("Found {} buckets", outcome.GetResult().GetBuckets().size());
+            LOG_INFO("Found {} buckets", outcome.GetResult().GetBuckets().size());
             for (auto &&b: outcome.GetResult().GetBuckets()) {
-                CPPIOLOG::info("{}", b.GetName());
+                LOG_INFO("{}", b.GetName());
             }
         }
     } else {
