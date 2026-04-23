@@ -3,6 +3,7 @@
 
 #include "gpu_storage_api.h"
 #include "gpu_storage_factory.h"
+#include "gpu_factory.h"
 #include "log.h"
 
 namespace CPPIO_NAMESPACE {
@@ -26,7 +27,7 @@ void ExampleGPUMemoryExport() {
     int fd = -1;
     Error err = gpu_storage->ExportMemoryAsFile("/mnt/gpu_memory.img", fd);
     if (err != ErrorOK) {
-        LOG_ERROR("Failed to export GPU memory: {}", err.message());
+        LOG_ERROR("Failed to export GPU memory: {}", err->ToString());
         return;
     }
 
@@ -45,13 +46,10 @@ void ExampleGPUMemoryExport() {
 void ExampleGPUReadWrite() {
     LOG_INFO("=== Example 2: GPU Read/Write Operations ===");
 
+    Error err = ERROR_OK;
+
     // Create AMD GPU storage
-    auto gpu_storage = std::make_shared<AMDGPUStorageApi>();
-    Error err = gpu_storage->Initialize("amd:0");
-    if (err != ErrorOK) {
-        LOG_ERROR("Failed to initialize AMD GPU storage: {}", err.message());
-        return;
-    }
+    auto gpu_storage = GPUStorageFactory::CreateGPUStorage("amd", "amd:0");
 
     // Create a volume context (mock)
     VolumeContext vol_ctx;  // In real code, this would be properly initialized
@@ -65,7 +63,7 @@ void ExampleGPUReadWrite() {
         
         err = gpu_storage->Write(vol_ctx, io);
         if (err != ErrorOK) {
-            LOG_ERROR("Write failed: {}", err.message());
+            LOG_ERROR("Write failed: {}", err->ToString());
             return;
         }
         LOG_INFO("Write to GPU memory successful");
@@ -79,7 +77,7 @@ void ExampleGPUReadWrite() {
         
         err = gpu_storage->Read(vol_ctx, io);
         if (err != ErrorOK) {
-            LOG_ERROR("Read failed: {}", err.message());
+            LOG_ERROR("Read failed: {}", err->ToString());
             return;
         }
         LOG_INFO("Read from GPU memory successful");
@@ -88,7 +86,7 @@ void ExampleGPUReadWrite() {
     // Synchronize GPU memory to file storage
     err = gpu_storage->SyncMemoryToFile(0, gpu_storage->GetMemorySize());
     if (err != ErrorOK) {
-        LOG_ERROR("Sync failed: {}", err.message());
+        LOG_ERROR("Sync failed: {}", err->ToString());
         return;
     }
     LOG_INFO("GPU memory synchronized to file");
@@ -108,7 +106,7 @@ void ExampleMultiGPU() {
     std::vector<std::string> devices;
     Error err = GPUStorageFactory::DetectAvailableDevices(devices);
     if (err != ErrorOK) {
-        LOG_ERROR("Failed to detect GPUs: {}", err.message());
+        LOG_ERROR("Failed to detect GPUs: {}", err->ToString());
         return;
     }
 
@@ -144,7 +142,7 @@ void ExampleGPUMemoryManager() {
     LOG_INFO("=== Example 4: GPU Memory Manager ===");
 
     // Create NVIDIA memory manager
-    auto memory_manager = CreateGPUMemoryManager("nvidia");
+    auto memory_manager = GPUFactory::CreateGPUMemoryManager("nvidia");
     if (!memory_manager) {
         LOG_ERROR("Failed to create memory manager");
         return;
@@ -156,7 +154,7 @@ void ExampleGPUMemoryManager() {
     
     Error err = memory_manager->AllocateMemory(size, "nvidia:0", region);
     if (err != ErrorOK) {
-        LOG_ERROR("Memory allocation failed: {}", err.message());
+        LOG_ERROR("Memory allocation failed: {}", err->ToString());
         return;
     }
 
@@ -194,7 +192,7 @@ void ExampleGPUMemoryManager() {
     // Free memory
     err = memory_manager->FreeMemory(region);
     if (err != ErrorOK) {
-        LOG_ERROR("Memory free failed: {}", err.message());
+        LOG_ERROR("Memory free failed: {}", err->ToString());
     } else {
         LOG_INFO("Memory freed successfully");
     }
@@ -208,7 +206,7 @@ void ExampleGPUMemoryManager() {
 void ExampleErrorHandling() {
     LOG_INFO("=== Example 5: Error Handling ===");
 
-    auto gpu_storage = std::make_shared<NVIDIAGPUStorageApi>();
+    auto gpu_storage = GPUStorageFactory::CreateGPUStorage("nvidia", "nvidia:0");
     
     // Error: Initialize before use
     VolumeContext vol_ctx;
@@ -218,13 +216,13 @@ void ExampleErrorHandling() {
 
     Error err = gpu_storage->Read(vol_ctx, io);
     if (err != ErrorOK) {
-        LOG_ERROR("Expected error - GPU not initialized: {}", err.message());
+        LOG_ERROR("Expected error - GPU not initialized: {}", err->ToString());
     }
 
     // Initialize GPU
     err = gpu_storage->Initialize("nvidia:0");
     if (err != ErrorOK) {
-        LOG_ERROR("Initialization error: {}", err.message());
+        LOG_ERROR("Initialization error: {}", err->ToString());
         return;
     }
 
@@ -235,7 +233,7 @@ void ExampleErrorHandling() {
 
     err = gpu_storage->Read(vol_ctx, io);
     if (err != ErrorOK) {
-        LOG_ERROR("Expected error - Read beyond bounds: {}", err.message());
+        LOG_ERROR("Expected error - Read beyond bounds: {}", err->ToString());
     }
 
     gpu_storage->Shutdown();

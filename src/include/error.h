@@ -93,7 +93,7 @@ bool operator==(Error error, ErrorCodeEnum code) {
 }
 
 template <typename ErrorCodeEnum>
-inline ErrorPtr<ErrorCodeEnum> make_error(
+inline ErrorPtr<ErrorCodeEnum> MakeError(
     ErrorCodeEnum ecode, const char* file,
     const char* func, int lineno, const char* msg)
 {
@@ -120,7 +120,7 @@ inline std::ostream& operator<<(std::ostream& os, const ErrorPtr<ErrorCodeEnum> 
 }
 
 #define MAKE_ERROR(ecode, msg) \
-            make_error(ecode, __FILE__, __FUNCTION__, __LINE__, msg)
+            MakeError(ecode, __FILE__, __FUNCTION__, __LINE__, msg)
 
 } // namespace CPPIO_NAMESPACE 
 

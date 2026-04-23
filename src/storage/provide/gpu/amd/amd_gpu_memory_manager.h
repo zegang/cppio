@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <mutex>
 
-#include "gpu_memory_manager.h"
+#include "../gpu_memory_manager.h"
 #include "error.h"
 
 namespace CPPIO_NAMESPACE {
@@ -75,11 +75,6 @@ private:
      */
     Error GetDeviceIndex(const std::string& device_id, int& device_index);
 };
-
-/**
- * Factory function for creating AMD GPU memory manager.
- */
-std::shared_ptr<GPUMemoryManager> CreateAMDGPUMemoryManager();
 
 } // namespace CPPIO_NAMESPACE
 

@@ -2,10 +2,8 @@
 # PowerShell script to build, start, and remove the cppio-dev container
 # Equivalent to startdevcontainer.sh
 
-$CPPIO_PROJECT_NAME = "cppio"
-
 param(
-    [Alias('n')][string]$ImageName = "${CPPIO_PROJECT_NAME}/cppio-dev",
+    [Alias('n')][string]$ImageName = "cppio/cppio-dev",
     [Alias('e')][string]$Engine = 'docker',
     [Alias('b')][switch]$Build,
     [Alias('s')][switch]$Start,
@@ -15,6 +13,9 @@ param(
     [Alias('ep')][switch]$SetExecutionPolicy,
     [Alias('l')][switch]$ListContainers
 )
+
+$CPPIO_PROJECT_NAME = "cppio"
+
 # Function to list containers (Docker or Podman)
 function List-Containers {
     if (Get-Command docker -ErrorAction SilentlyContinue) {
@@ -100,7 +101,6 @@ function Set-Or-Remove-Proxy {
 }
 
 # --- Configuration ---
-$ImageName = "cppio-dev"
 $DOCKERFILE_PATH = Split-Path -Parent (Resolve-Path $MyInvocation.MyCommand.Path)
 Write-Host "The absolute current directory (using Resolve-Path) is: $DOCKERFILE_PATH"
 # ---------------------

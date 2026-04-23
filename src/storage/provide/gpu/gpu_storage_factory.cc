@@ -1,6 +1,7 @@
 // Copyright 2026 cppio authors. All rights reserved.
 
 #include "gpu_storage_factory.h"
+#include "gpu_factory.h"
 #include "nvidia/nvidia_gpu_storage_api.h"
 #include "amd/amd_gpu_storage_api.h"
 #include "nvidia/nvidia_gpu_memory_manager.h"
@@ -9,18 +10,18 @@
 
 namespace CPPIO_NAMESPACE {
 
-std::shared_ptr<GPUStorageApi> GPUStorageFactory::CreateGPUStorage(
+std::unique_ptr<GPUStorageApi> GPUStorageFactory::CreateGPUStorage(
     const std::string& vendor,
     const std::string& device_id) {
     
     LOG_INFO("Creating GPU storage for vendor: {}, device: {}", vendor, device_id);
 
-    std::shared_ptr<GPUStorageApi> api = nullptr;
+    std::unique_ptr<GPUStorageApi> api = nullptr;
 
     if (vendor == "nvidia") {
-        api = std::make_shared<NVIDIAGPUStorageApi>();
+        api = std::make_unique<NVIDIAGPUStorageApi>();
     } else if (vendor == "amd") {
-        api = std::make_shared<AMDGPUStorageApi>();
+        api = std::make_unique<AMDGPUStorageApi>();
     } else {
         LOG_ERROR("Unsupported GPU vendor: {}", vendor);
         return nullptr;
@@ -28,7 +29,7 @@ std::shared_ptr<GPUStorageApi> GPUStorageFactory::CreateGPUStorage(
 
     Error err = api->Initialize(device_id);
     if (err != ErrorOK) {
-        LOG_ERROR("Failed to initialize GPU storage: {}", err.message());
+        LOG_ERROR("Failed to initialize GPU storage: {}", err->ToString());
         return nullptr;
     }
 
@@ -63,7 +64,7 @@ Error GPUStorageFactory::DetectDevicesForVendor(const std::string& vendor,
 
     LOG_INFO("Detecting {} GPU devices", vendor);
 
-    std::shared_ptr<GPUMemoryManager> manager = CreateGPUMemoryManager(vendor);
+    std::unique_ptr<GPUMemoryManager> manager = std::move(GPUFactory::CreateGPUMemoryManager(vendor));
     if (!manager) {
         LOG_WARN("Failed to create GPU memory manager for vendor: {}", vendor);
         return MAKE_ERROR(std::errc::device_or_resource_busy, 
@@ -72,7 +73,7 @@ Error GPUStorageFactory::DetectDevicesForVendor(const std::string& vendor,
 
     err = manager->GetAvailableDevices(devices);
     if (err != ErrorOK) {
-        LOG_WARN("Failed to detect {} devices: {}", vendor, err.message());
+        LOG_WARN("Failed to detect {} devices: {}", vendor, err->ToString());
     } else {
         LOG_INFO("Found {} {} GPU devices", devices.size(), vendor);
     }

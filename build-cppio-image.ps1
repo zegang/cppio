@@ -2,18 +2,18 @@
 # PowerShell script to automate building cppio-rel for Docker Compose on Windows 11
 # This script builds the project in the dev container, then runs docker-compose build in WSL
 
-$CPPIO_PROJECT_NAME = "cppio"
-
 param(
-    [Alias('d')][string]$DevImageName = "${CPPIO_PROJECT_NAME}/cppio-dev",
-    [Alias('n')][string]$ImageName = "${CPPIO_PROJECT_NAME}/cppio-rel",
+    [Alias('d')][string]$DevImageName = 'cppio/cppio-dev',
+    [Alias('n')][string]$ImageName = 'cppio/cppio-rel',
     [Alias('e')][string]$Engine = 'docker',
     [Alias('s')][int]$Step = 2,
+    [Alias('m')][string]$Make = 'cppio',
     [Alias('w')][string]$WslDis = 'Ubuntu-24.04',
     [Alias('h')][switch]$Help
 )
 
 # --- Configuration ---
+$CPPIO_PROJECT_NAME = "cppio"
 $BUILD_CONTAINER_NAME = "cppio_dev_build_temp"
 
 $CPPIO_ROOT = Split-Path -Parent (Resolve-Path $MyInvocation.MyCommand.Path)
@@ -30,10 +30,11 @@ if ($Help) {
     Write-Host "3. Runs docker-compose build cppio-hsd in WSL ${WslDis}"
     Write-Host ""
     Write-Host "OPTIONS:"
-    Write-Host "  -DevImageName (-d)    Specify image name for CPPIO dev (default: cppio-dev)."
-    Write-Host "  -ImageName    (-n)    Specify image name for CPPIO (default: cppio-rel)."
+    Write-Host "  -DevImageName (-d)    Specify image name for CPPIO dev (default: cppio/cppio-dev)."
+    Write-Host "  -ImageName    (-n)    Specify image name for CPPIO (default: cppio/cppio-rel)."
     Write-Host "  -Engine       (-e)    Specify container engine: docker or podman (default: docker)."
     Write-Host "  -Step         (-s)    1 for dev image build, 2 for all."
+    Write-Host "  -Make         (-m)    all to build all source codes, cppio for only cppio source codes."
     Write-Host "  -WslDis       (-e)    Specify WSL distribution (default: Ubuntu-24.04)."
     Write-Host "  -Help         (-h)    Show this help message."
     exit 0
@@ -72,7 +73,8 @@ function Container-Running {
 # Function to build image (copied from startdevcontainer.ps1)
 function Build-CPPIO-Dev-Image {
     Write-Host "Building CPPIO dev image $DevImageName..."
-    $startDevScript = Join-Path $CPPIO_ROOT "devcontainer" "startdevcontainer.ps1"
+    $devContainerPath = Join-Path -Path $CPPIO_ROOT -ChildPath "devcontainer"
+    $startDevScript = Join-Path -Path $devContainerPath -ChildPath "startdevcontainer.ps1"
     & $startDevScript -e $Engine -b
     if ($LASTEXITCODE -eq 0) {
         Write-Host "Dev image built successfully!"
@@ -86,7 +88,8 @@ function Build-CPPIO-Dev-Image {
 # Function to run build in container
 function Run-Build-In-Container {
     Write-Host "Running build in dev container..."
-    $CPPIO_BUILD_COMMANDS = "cd /workspace/cppio && ./bootstrap.sh all && ./makecppio.sh"
+    $build_all_thirds = if ($Make -eq "all") { "&& ./bootstrap.sh all" } else { "" }
+    $CPPIO_BUILD_COMMANDS = "cd /workspace/cppio ${build_all_thirds} && ./makecppio.sh"
     $cmd = "$Engine run --rm --name $BUILD_CONTAINER_NAME -v ${WORKSPACE_PATH}:/workspace/cppio $DevImageName /bin/bash -c `"${CPPIO_BUILD_COMMANDS}`""
     Write-Host "Command: $cmd"
     Invoke-Expression $cmd
@@ -117,7 +120,7 @@ function Run-Compose-Build-In-WSL {
 
 # Main script
 Write-Host "DOCKERFILE_PATH: $DOCKERFILE_PATH, WORKSPACE_PATH: $WORKSPACE_PATH"
-Write-Host "Starting automated build process for cppio-rel..."
+Write-Host "Starting automated build process for ${ImageName}..."
 
 # Check if dev image exists, build if not
 if (-not (Image-Exists $DevImageName)) {

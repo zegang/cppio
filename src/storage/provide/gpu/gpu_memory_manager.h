@@ -71,12 +71,6 @@ public:
                                        uint64_t& total, uint64_t& free) = 0;
 };
 
-/**
- * Factory function to create vendor-specific GPU memory manager.
- * Implementation selected based on available GPU hardware.
- */
-std::shared_ptr<GPUMemoryManager> CreateGPUMemoryManager(const std::string& vendor);
-
 } // namespace CPPIO_NAMESPACE
 
 #endif // CPPIO_GPU_MEMORY_MANAGER_H_

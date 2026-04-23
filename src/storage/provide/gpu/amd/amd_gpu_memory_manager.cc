@@ -1,6 +1,7 @@
 // Copyright 2026 cppio authors. All rights reserved.
 
 #include "amd_gpu_memory_manager.h"
+#include "../gpu_factory.h"
 #include "log.h"
 
 namespace CPPIO_NAMESPACE {
@@ -231,8 +232,6 @@ Error AMDGPUMemoryManager::GetDeviceIndex(const std::string& device_id, int& dev
     return err;
 }
 
-std::shared_ptr<GPUMemoryManager> CreateAMDGPUMemoryManager() {
-    return std::make_shared<AMDGPUMemoryManager>();
-}
+REGISTER_GPU_VENDOR(amd, "amd", AMDGPUMemoryManager)
 
 } // namespace CPPIO_NAMESPACE

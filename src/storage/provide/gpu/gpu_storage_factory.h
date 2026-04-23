@@ -22,9 +22,9 @@ public:
      * 
      * @param vendor - GPU vendor identifier ("nvidia" or "amd")
      * @param device_id - Device identifier (e.g., "nvidia:0", "amd:1")
-     * @return Shared pointer to GPUStorageApi, or nullptr on failure
+     * @return Unique pointer to GPUStorageApi, or nullptr on failure
      */
-    static std::shared_ptr<GPUStorageApi> CreateGPUStorage(
+    static std::unique_ptr<GPUStorageApi> CreateGPUStorage(
         const std::string& vendor,
         const std::string& device_id);
 

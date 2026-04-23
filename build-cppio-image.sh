@@ -10,6 +10,7 @@ IMAGE_NAME="${CPPIO_PROJECT_NAME}/cppio-rel"
 BUILD_CONTAINER_NAME="cppio_dev_build_temp"
 ENGINE="docker"
 STEP="2"
+MAKE="cppio"
 
 CPPIO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CPPIO_DEPLOY_ROOT="${CPPIO_ROOT}/deploy"
@@ -28,8 +29,9 @@ show_help() {
     echo "OPTIONS:"
     echo "  -d, --dev-image     NAME    Specify container image name for CPPIO dev."
     echo "  -n, --image-name    NAME    Specify container image name for CPPIO."
-    echo "  -s, --step          1/2     1 for dev image build, 2 for all."
+    echo "  -s, --step          1|2     1 for dev image build, 2 for all."
     echo "  -e, --engine        ENGINE  Specify container engine: docker or podman (default: docker)."
+    echo "  -m, --make       all|cppio  all to build all source codes, cppio for only cppio source codes."
     echo "  -h, --help                  Show this help message"
 }
 
@@ -88,7 +90,12 @@ build_cppio_dev_image() {
 # Function to run build in container
 run_build_in_container() {
     echo "Running build in dev container..."
-    local cppio_build_commands="cd /workspace/cppio && ./bootstrap.sh all && ./makecppio.sh"
+    local cppio_build_commands
+    if [ "$Make" = "all" ]; then
+        cppio_build_commands="cd /workspace/cppio && ./bootstrap.sh all && ./makecppio.sh"
+    else
+        cppio_build_commands="cd /workspace/cppio && ./makecppio.sh"
+    fi
     
     local cmd="${ENGINE} run --rm --name ${BUILD_CONTAINER_NAME} -v ${WORKSPACE_PATH}:/workspace/cppio ${DEV_IMAGE_NAME} /bin/bash -c \"${cppio_build_commands}\""
     echo "Command: ${cmd}"
@@ -149,6 +156,10 @@ while [[ $# -gt 0 ]]; do
             STEP=$2
             shift 2
             ;;
+        -m|--make)
+            MAKE=$2
+            shift 2
+            ;;
         -h|--help)
             show_help
             exit 0
@@ -163,7 +174,7 @@ done
 
 # Main script execution
 echo "DOCKERFILE_PATH: ${DOCKERFILE_PATH}, WORKSPACE_PATH: ${WORKSPACE_PATH}"
-echo "Starting automated build process for cppio-rel..."
+echo "Starting automated build process for ${IMAGE_NAME}..."
 
 # Check if dev image exists, build if not
 if ! image_exists "${DEV_IMAGE_NAME}"; then

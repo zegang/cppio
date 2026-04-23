@@ -32,7 +32,7 @@ Error NVIDIAGPUStorageApi::Initialize(const std::string& gpu_device_id) {
     // TODO: Setup CUDA context
     err = SetupCUDAContext(gpu_device_id);
     if (err != ErrorOK) {
-        LOG_ERROR("Failed to setup CUDA context for device {}: {}", gpu_device_id, err.message());
+        LOG_ERROR("Failed to setup CUDA context for device {}: {}", gpu_device_id, err->ToString());
         return err;
     }
 

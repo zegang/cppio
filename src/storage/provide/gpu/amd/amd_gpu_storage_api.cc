@@ -32,7 +32,7 @@ Error AMDGPUStorageApi::Initialize(const std::string& gpu_device_id) {
     // Setup HIP context
     err = SetupHIPContext(gpu_device_id);
     if (err != ErrorOK) {
-        LOG_ERROR("Failed to setup HIP context for device {}: {}", gpu_device_id, err.message());
+        LOG_ERROR("Failed to setup HIP context for device {}: {}", gpu_device_id, err->ToString());
         return err;
     }
 

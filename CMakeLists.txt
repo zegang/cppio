@@ -57,6 +57,9 @@ endif()
 # )
 # Specify linker flags to link against specific system libraries
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lm -lgcc_s -lc -lrt -lpthread")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--build-id=sha1")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--build-id=sha1")
+set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--build-id=sha1")
 
 set(THIRD_PARTY_INSTALL_ROOT "${CMAKE_BINARY_DIR}/../third_party")
 include_directories(${THIRD_PARTY_INSTALL_ROOT})

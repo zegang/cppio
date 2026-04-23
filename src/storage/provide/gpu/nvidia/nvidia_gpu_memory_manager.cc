@@ -1,6 +1,7 @@
 // Copyright 2026 cppio authors. All rights reserved.
 
 #include "nvidia_gpu_memory_manager.h"
+#include "../gpu_factory.h"
 #include "log.h"
 
 namespace CPPIO_NAMESPACE {
@@ -230,8 +231,6 @@ Error NVIDIAGPUMemoryManager::GetDeviceIndex(const std::string& device_id, int& 
     return err;
 }
 
-std::shared_ptr<GPUMemoryManager> CreateNVIDIAGPUMemoryManager() {
-    return std::make_shared<NVIDIAGPUMemoryManager>();
-}
+REGISTER_GPU_VENDOR(nvidia, "nvidia", NVIDIAGPUMemoryManager)
 
 } // namespace CPPIO_NAMESPACE
